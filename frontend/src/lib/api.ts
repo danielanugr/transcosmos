@@ -27,6 +27,7 @@ class ApiClient {
     }
 
     const response = await fetch(`${API_BASE}${endpoint}`, {
+      cache: 'no-cache',
       ...options,
       headers,
     });
@@ -74,17 +75,53 @@ class ApiClient {
     const query = new URLSearchParams();
     if (params.status && params.status !== 'all') query.set('status', params.status);
     if (params.priority && params.priority !== 'all') query.set('priority', params.priority);
-    if (params.assigned_to) query.set('assigned_to', String(params.assigned_to));
+    if (params.assigned_to) {
+      query.set('assigned_user_id', String(params.assigned_to));
+      query.set('assigned_to', String(params.assigned_to));
+    }
     if (params.search) query.set('search', params.search);
     if (params.sort_by) query.set('sort_by', params.sort_by);
-    if (params.sort_order) query.set('sort_order', params.sort_order);
+    if (params.sort_order) {
+      query.set('order', params.sort_order);
+      query.set('sort_order', params.sort_order);
+    }
     if (params.page) query.set('page', String(params.page));
-    if (params.limit) query.set('limit', String(params.limit));
+    if (params.limit) {
+      query.set('per_page', String(params.limit));
+      query.set('limit', String(params.limit));
+    }
 
     const queryString = query.toString();
     const endpoint = `/tasks${queryString ? `?${queryString}` : ''}`;
-    const res = await this.request<ApiResponse<PaginatedTasks>>(endpoint);
-    return res.data;
+    const res = await this.request<any>(endpoint);
+
+    if (Array.isArray(res?.data)) {
+      return {
+        data: res.data,
+        current_page: res.meta?.page || res.meta?.current_page || 1,
+        last_page: res.meta?.last_page || 1,
+        total: res.meta?.total ?? res.data.length,
+        per_page: res.meta?.per_page || params.limit || 12,
+      };
+    }
+
+    if (res?.data && Array.isArray(res.data.data)) {
+      return {
+        data: res.data.data,
+        current_page: res.data.current_page || 1,
+        last_page: res.data.last_page || 1,
+        total: res.data.total ?? res.data.data.length,
+        per_page: res.data.per_page || 12,
+      };
+    }
+
+    return {
+      data: [],
+      current_page: 1,
+      last_page: 1,
+      total: 0,
+      per_page: 12,
+    };
   }
 
   async getTask(id: number): Promise<Task> {
@@ -99,18 +136,29 @@ class ApiClient {
     priority?: string;
     due_date?: string | null;
     assigned_to?: number | null;
+    assigned_user_id?: number | null;
   }): Promise<Task> {
+    const bodyPayload = {
+      ...payload,
+      assigned_user_id: payload.assigned_user_id ?? payload.assigned_to ?? null,
+    };
     const res = await this.request<ApiResponse<Task>>('/tasks', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(bodyPayload),
     });
     return res.data;
   }
 
   async updateTask(id: number, payload: Partial<Task>): Promise<Task> {
+    const bodyPayload: any = {
+      ...payload,
+    };
+    if (payload.assigned_to !== undefined) {
+      bodyPayload.assigned_user_id = payload.assigned_to;
+    }
     const res = await this.request<ApiResponse<Task>>(`/tasks/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(bodyPayload),
     });
     return res.data;
   }

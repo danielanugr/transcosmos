@@ -78,7 +78,7 @@ class TaskController extends Controller
         if ($request->header('If-None-Match') === $etag) {
             return response()->json(null, 304, [
                 'ETag' => $etag,
-                'Cache-Control' => 'private, max-age=60, must-revalidate',
+                'Cache-Control' => 'private, no-cache, must-revalidate',
             ]);
         }
 
@@ -87,7 +87,7 @@ class TaskController extends Controller
             'data' => $cached['data'],
             'meta' => $cached['meta'],
         ])->header('ETag', $etag)
-          ->header('Cache-Control', 'private, max-age=60, must-revalidate');
+          ->header('Cache-Control', 'private, no-cache, must-revalidate');
     }
 
     public function show(int $id): JsonResponse

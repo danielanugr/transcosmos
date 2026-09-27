@@ -59,10 +59,11 @@ export default function Home() {
     if (!quiet) setLoading(true);
     try {
       const res = await api.getTasks(filters);
-      setTasks(res.data || []);
-      setCurrentPage(res.current_page || 1);
-      setLastPage(res.last_page || 1);
-      setTotal(res.total || 0);
+      const list = Array.isArray(res) ? res : (res?.data || []);
+      setTasks(list);
+      setCurrentPage(res?.current_page || 1);
+      setLastPage(res?.last_page || 1);
+      setTotal(res?.total ?? list.length);
     } catch (err: any) {
       if (!quiet) {
         toast(err.message || 'Failed to fetch tasks.', 'error');
