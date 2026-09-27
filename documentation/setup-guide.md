@@ -1,74 +1,151 @@
-# Task Management Platform - Setup Guide
+# Task Management Platform - Comprehensive Setup Guide
 
-## System Requirements
+## 1. Prerequisites & System Requirements
 
-- PHP 8.2 or higher (tested on PHP 8.3)
-- PHP Extensions: `pdo`, `pdo_sqlite` (or `pdo_mysql`), `gd`, `fileinfo`, `mbstring`, `openssl`, `curl`, `sodium`
-- Composer 2.x
-- Optional: MySQL 8.0+ / MariaDB 10.4+
+Ensure the following tools are installed on your machine:
 
-## Quick Start (Zero Configuration with SQLite)
+- **PHP**: 8.2 or higher (recommended: PHP 8.3)
+- **PHP Extensions**: `pdo`, `pdo_sqlite` (or `pdo_mysql`), `gd`, `fileinfo`, `mbstring`, `openssl`, `curl`, `sodium`
+- **Composer**: 2.x
+- **Node.js**: 18.x or 20.x+ (recommended: Node 20 LTS)
+- **npm**: 9.x or 10.x+
+- **Optional**: MySQL 8.0+ / MariaDB 10.4+ (SQLite is supported out-of-the-box)
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+---
 
-2. Run migrations and populate the sample seed data:
-   ```bash
-   php artisan migrate:fresh --seed
-   ```
+## 2. Quick Start (Zero-Configuration with SQLite)
 
-3. Run the automated test suite:
-   ```bash
-   php artisan test
-   ```
+This is the fastest way to get the entire full-stack application running in under 2 minutes.
 
-4. Start the local development server:
-   ```bash
-   php artisan serve --port=8000
-   ```
+### Step 1: Clone & Navigate to Project Root
+```bash
+git clone <repository-url>
+cd trans-cosmos
+```
 
-5. In a separate terminal, start the background queue worker:
-   ```bash
-   php artisan queue:work
-   ```
+### Step 2: Backend Setup (Laravel)
+```bash
+cd backend
 
-## Production Setup with MySQL
+# Install PHP dependencies
+composer install
 
-1. Create a MySQL database:
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+
+# Run migrations and populate sample database
+php artisan migrate:fresh --seed
+
+# Create storage symbolic link for uploads
+php artisan storage:link
+
+# Start the Laravel development server (runs on http://127.0.0.1:8000)
+php artisan serve --port=8000
+```
+
+### Step 3: Start Queue Worker (In a separate terminal)
+```bash
+cd backend
+php artisan queue:work
+```
+
+### Step 4: Frontend Setup (Next.js)
+Open a new terminal window:
+```bash
+cd frontend
+
+# Install Node dependencies
+npm install
+
+# Start Next.js development server (runs on http://localhost:3000)
+npm run dev
+```
+
+### Step 5: Access the Web Application
+Open your browser and navigate to:
+```
+http://localhost:3000
+```
+
+---
+
+## 3. Production Setup with MySQL (Optional)
+
+If you prefer using MySQL instead of SQLite:
+
+1. **Create the database in MySQL**:
    ```sql
    CREATE DATABASE task_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-2. Import the SQL dump:
+2. **Import the SQL dump** (contains schema and sample seed data):
    ```bash
-   mysql -u root -p task_management < database/dump.sql
+   mysql -u root -p task_management < backend/database/dump.sql
    ```
 
-3. Update `.env` in `backend/`:
+3. **Update `.env` in `backend/`**:
    ```env
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
    DB_PORT=3306
    DB_DATABASE=task_management
-   DB_USERNAME=your_username
-   DB_PASSWORD=your_password
+   DB_USERNAME=your_mysql_username
+   DB_PASSWORD=your_mysql_password
    ```
 
-4. Run migrations and seeders:
+4. **Verify migrations and seeders**:
    ```bash
    php artisan migrate --seed
    ```
 
-## Default Test User Accounts
+---
 
-All default test accounts share the password: `password123`
+## 4. Default Test Credentials
 
-| Name | Email | Role |
-| --- | --- | --- |
-| Alice Johnson | `alice@example.com` | `admin` |
-| Bob Smith | `bob@example.com` | `manager` |
-| Charlie Brown | `charlie@example.com` | `member` |
-| Diana Prince | `diana@example.com` | `member` |
-| Evan Wright | `evan@example.com` | `member` |
+All seed accounts share the default password: **`password123`**
+
+| Name | Email | Role | Recommended Use |
+| --- | --- | --- | --- |
+| **Alice Johnson** | `alice@example.com` | `admin` | Full administrative control, task management, queue triggers |
+| **Bob Smith** | `bob@example.com` | `manager` | Project management, task assignment, status updates |
+| **Charlie Brown** | `charlie@example.com` | `member` | Individual contributor, comments, file attachments |
+| **Diana Prince** | `diana@example.com` | `member` | Individual contributor |
+| **Evan Wright** | `evan@example.com` | `member` | Individual contributor |
+
+---
+
+## 5. Running Automated Tests
+
+### 5.1 Backend Tests (PHPUnit - 41 Tests)
+```bash
+cd backend
+php artisan test
+```
+*Executes all unit tests (`VirusScannerServiceTest`, `ImageThumbnailServiceTest`, `JwtServiceTest`) and feature tests (`TaskApiTest`, `AttachmentApiTest`, `AuthApiTest`, `DatabaseIntegrationTest`, `QueueApiTest`, `BonusFeaturesTest`).*
+
+### 5.2 Frontend Tests (Vitest - 16 Tests)
+```bash
+cd frontend
+npm test
+```
+*Executes all frontend domain tests, component unit tests, API integration tests, bonus feature tests, and critical user flow simulation tests.*
+
+### 5.3 Frontend Production Build Validation
+```bash
+cd frontend
+npm run build
+```
+*Verifies Next.js Turbopack compiler, TypeScript type-checking, and static page generation.*
+
+---
+
+## 6. Project Documentation Index
+
+- **API Documentation (OpenAPI 3.0)**: [`documentation/api-docs/openapi.yaml`](file:///d:/test/trans-cosmos/documentation/api-docs/openapi.yaml)
+- **API Documentation (Postman Collection)**: [`documentation/api-docs/postman_collection.json`](file:///d:/test/trans-cosmos/documentation/api-docs/postman_collection.json)
+- **Database Schema & ERD**: [`documentation/database-schema.md`](file:///d:/test/trans-cosmos/documentation/database-schema.md)
+- **Architecture Documentation & ADRs**: [`documentation/architecture.md`](file:///d:/test/trans-cosmos/documentation/architecture.md)
+- **Production Deployment Guide**: [`documentation/deployment-guide.md`](file:///d:/test/trans-cosmos/documentation/deployment-guide.md)
