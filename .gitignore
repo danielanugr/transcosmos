@@ -10,3 +10,15 @@
 !/backend/storage/uploads/.gitkeep
 !/backend/storage/temp/.gitkeep
 !/backend/storage/exports/.gitkeep
+
+# AI / Assistant configuration files
+AGENTS.md
+CLAUDE.md
+*.md.agent*
+.agents/
+.claude/
+.cursor/
+.gemini/
+.idea/
+.vscode/
+

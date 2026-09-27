@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Seed 5 Users
         $password = Hash::make('password123');
 
         $users = [
@@ -51,7 +50,6 @@ class DatabaseSeeder extends Seeder
             ]),
         ];
 
-        // 2. Seed 15 Tasks
         $tasksData = [
             [
                 'title' => 'Set up production server architecture',
@@ -195,7 +193,6 @@ class DatabaseSeeder extends Seeder
             $createdTasks[] = Task::create($t);
         }
 
-        // 3. Seed 10 Comments
         $commentsData = [
             ['task_id' => $createdTasks[0]->id, 'user_id' => $users[0]->id, 'comment' => 'Infrastructure provisioned on target environment with TLS certificates configured.'],
             ['task_id' => $createdTasks[1]->id, 'user_id' => $users[1]->id, 'comment' => 'Foreign key cascade rules have been verified against requirements.'],
@@ -213,7 +210,6 @@ class DatabaseSeeder extends Seeder
             TaskComment::create($c);
         }
 
-        // 4. Seed Attachments
         TaskAttachment::create([
             'task_id' => $createdTasks[1]->id,
             'file_name' => 'database_schema_v1.png',

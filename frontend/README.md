@@ -6,7 +6,7 @@ Production-ready dashboard interface built with **Next.js (App Router)**, **Type
 
 1. **Authentication**:
    - Secure login form with validation.
-   - Quick one-click demo credentials (`Admin: john@example.com`, `User: jane@example.com`).
+   - Quick one-click demo credentials (`Admin: alice@example.com`, `Member: bob@example.com`).
    - JWT session management and bearer token injection.
    - User profile indicator and logout mechanism.
 

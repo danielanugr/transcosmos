@@ -44,7 +44,6 @@ const server = http.createServer((req, res) => {
   const correlationId = req.headers['x-correlation-id'] || crypto.randomUUID();
   res.setHeader('X-Correlation-ID', correlationId);
 
-  // 1. Health check
   if (req.method === 'GET' && (pathname === '/health' || pathname === '/api/v1/health')) {
     return sendJson(res, 200, {
       service: SERVICE_NAME,
@@ -56,7 +55,6 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // 2. Dispatch Notification Endpoint
   if (req.method === 'POST' && pathname === '/api/v1/notify') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
@@ -96,7 +94,6 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 3. Get Delivery Audit History
   if (req.method === 'GET' && pathname === '/api/v1/deliveries') {
     const limit = parseInt(parsedUrl.query.limit || '50', 10);
     return sendJson(res, 200, {

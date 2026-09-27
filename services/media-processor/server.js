@@ -45,7 +45,6 @@ const server = http.createServer(async (req, res) => {
   const correlationId = req.headers['x-correlation-id'] || crypto.randomUUID();
   res.setHeader('X-Correlation-ID', correlationId);
 
-  // 1. Health check
   if (req.method === 'GET' && (pathname === '/health' || pathname === '/api/v1/health')) {
     return sendJson(res, 200, {
       service: SERVICE_NAME,
@@ -57,7 +56,6 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  // 2. Threat & Virus Scanning endpoint
   if (req.method === 'POST' && pathname === '/api/v1/scan-threat') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
@@ -93,7 +91,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 3. Process Media & Thumbnail Task
   if (req.method === 'POST' && pathname === '/api/v1/process-media') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
@@ -136,7 +133,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Default 404
   return sendJson(res, 404, {
     success: false,
     error: `Route ${pathname} not found on ${SERVICE_NAME}.`,

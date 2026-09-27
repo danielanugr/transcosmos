@@ -18,7 +18,7 @@ A production-ready REST API built with Laravel 12 providing task management, sec
 
 ```
 backend/
-├── app/
+├── src/
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── AuthController.php

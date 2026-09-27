@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # 1. Relational Database Service (MySQL)
   mysql:
     image: mysql:8.0
     container_name: tm_micro_mysql
@@ -22,7 +21,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # 2. In-Memory Distributed Cache & Event Broker (Redis)
   redis:
     image: redis:7-alpine
     container_name: tm_micro_redis
@@ -40,7 +38,6 @@ services:
       timeout: 3s
       retries: 5
 
-  # 3. Core Task API & API Gateway Service (Laravel 12)
   api-gateway:
     build:
       context: ./backend
@@ -73,7 +70,6 @@ services:
       redis:
         condition: service_healthy
 
-  # 4. Media Processing Microservice (Port 8001)
   media-processor:
     build:
       context: ./services/media-processor
@@ -87,7 +83,6 @@ services:
     networks:
       - microservices_net
 
-  # 5. Notification & Event Dispatcher Microservice (Port 8002)
   notification-service:
     build:
       context: ./services/notification-service
@@ -101,7 +96,6 @@ services:
     networks:
       - microservices_net
 
-  # 6. Web Dashboard Frontend (Next.js 16)
   frontend:
     build:
       context: ./frontend
