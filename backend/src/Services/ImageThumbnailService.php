@@ -51,7 +51,7 @@ class ImageThumbnailService
         imagefilledrectangle($image, 0, 0, $width, $height, $bg);
 
         $circleColor = imagecolorallocate($image, 37, 99, 235);
-        imagefilledellipse($image, (int) ($width / 2), (int) ($height / 2), 48, 48);
+        imagefilledellipse($image, (int) ($width / 2), (int) ($height / 2), 48, 48, $circleColor);
 
         $white = imagecolorallocate($image, 255, 255, 255);
         $cx = (int) ($width / 2);
