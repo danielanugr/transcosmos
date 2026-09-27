@@ -128,4 +128,5 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deployment Simulation
-        run: echo "CD trigger: ${{ github.ref }}"
+        run: |
+          echo "CD trigger: ${{ github.ref }}"
