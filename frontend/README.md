@@ -1,52 +1,93 @@
-# Frontend Application (Task Management)
+# Task Management Frontend (Next.js)
 
-Modern single-page application built with React 19, TypeScript, and Vite, integrating with the Laravel backend REST API.
+Production-ready dashboard interface built with **Next.js (App Router)**, **TypeScript**, and **Tailwind CSS**. It connects to the Laravel REST API backend to provide real-time task management, file uploads with chunking, and interactive commenting.
+
+## Features Implemented
+
+1. **Authentication**:
+   - Secure login form with validation.
+   - Quick one-click demo credentials (`Admin: john@example.com`, `User: jane@example.com`).
+   - JWT session management and bearer token injection.
+   - User profile indicator and logout mechanism.
+
+2. **Task Dashboard & CRUD**:
+   - Create, read, update, and delete tasks.
+   - Task filtering by status (`pending`, `in_progress`, `completed`, `cancelled`).
+   - Priority filter (`low`, `medium`, `high`, `urgent`) and keyword search.
+   - Multi-field sorting (`created_at`, `due_date`, `priority`, `title`) and pagination.
+   - Bulk status updates for selected tasks.
+
+3. **Real-time Task Updates**:
+   - Polling synchronization interval with manual refresh trigger.
+   - Live visual indicators for task state changes.
+
+4. **File Uploads & Attachments**:
+   - Drag-and-drop file upload zone.
+   - Automatic chunked upload for files exceeding 5MB to handle large attachments reliably.
+   - Progress bar indicators with byte and chunk counter status.
+   - Thumbnail indicators, version tracking (`v1`, `v2`), and direct download links.
+
+5. **Comments System**:
+   - Live comment thread per task.
+   - Add new comment with keyboard shortcut (`Ctrl/Cmd + Enter`).
+   - Author ownership and delete permissions.
+
+6. **Feedback & Accessibility**:
+   - Self-dismissing toast notifications for all operations.
+   - Accessible modal dialogs with Escape key listeners and focus retention.
 
 ## Project Structure
 
-```
+```text
 frontend/
 ├── src/
-│   ├── assets/        # Static assets and icons
-│   ├── components/    # Reusable UI components
-│   ├── services/      # API client and service integrations
-│   ├── App.tsx        # Main application component
-│   └── main.tsx       # Application entry point
-├── public/            # Static public assets
-├── tests/             # Component and unit tests (Vitest)
-├── package.json       # Project dependencies and scripts
-├── vite.config.ts     # Vite configuration
-└── README.md          # Setup and development instructions
+│   ├── app/
+│   │   ├── globals.css         # Styling and micro-animations
+│   │   ├── layout.tsx          # Root layout with providers
+│   │   └── page.tsx            # Main view orchestration
+│   ├── components/
+│   │   ├── Auth/               # Login components
+│   │   ├── Dashboard/          # Header, stats, filters, cards, modals
+│   │   ├── Attachments/        # Drag & drop upload and attachment list
+│   │   ├── Comments/           # Comment feed and form
+│   │   └── UI/                 # Modals, toasts, and badges
+│   └── lib/
+│       ├── api.ts              # REST API client
+│       ├── authContext.tsx     # Authentication context
+│       └── types.ts            # Domain entity interfaces
+├── public/                     # Static assets and favicon
+├── tests/                      # Unit and integration test suite
+├── next.config.ts              # Next.js configuration
+├── package.json                # Project dependencies
+└── README.md                   # Documentation
 ```
 
 ## Getting Started
 
-### Prerequisites
-- Node.js >= 20.x
-- npm >= 10.x
-
-### Installation
-
+### 1. Install Dependencies
 ```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
 npm install
 ```
 
-### Environment Configuration
-
-Create a `.env` file in the `frontend` root:
-
+### 2. Configure Environment
+Verify `.env.local` contains the backend API URL:
 ```env
-VITE_API_BASE_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
 ```
 
-### Available Scripts
+### 3. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- `npm run dev`: Start the local Vite development server with HMR.
-- `npm run build`: Type-check and create production build.
-- `npm run test`: Run automated unit and integration tests using Vitest.
-- `npm run lint`: Run code linter.
-- `npm run preview`: Preview production build locally.
+### 4. Run Test Suite
+```bash
+npm test
+```
+
+### 5. Production Build
+```bash
+npm run build
+npm run start
+```
