@@ -52,13 +52,11 @@ class BonusFeaturesTest extends TestCase
             'uploaded_at' => now(),
         ]);
 
-        // Full content request
         $res = $this->get("/api/attachments/{$attachment->id}/stream");
         $res->assertStatus(200);
         $res->assertHeader('Accept-Ranges', 'bytes');
         $res->assertHeader('Content-Type', 'video/mp4');
 
-        // Partial range request (HTTP 206)
         $rangeRes = $this->withHeader('Range', 'bytes=0-99')
             ->get("/api/attachments/{$attachment->id}/stream");
 
@@ -74,7 +72,6 @@ class BonusFeaturesTest extends TestCase
             'created_by' => $this->user->id,
         ]);
 
-        // Post presence
         $res = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->postJson('/api/realtime/presence', [
                 'task_id' => $task->id,
@@ -83,12 +80,10 @@ class BonusFeaturesTest extends TestCase
         $res->assertStatus(200);
         $res->assertJsonPath('success', true);
 
-        // Get presence list
         $listRes = $this->getJson('/api/realtime/presence');
         $listRes->assertStatus(200);
         $this->assertNotEmpty($listRes->json('data'));
 
-        // Post typing indicator
         $typingRes = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->postJson('/api/realtime/typing', [
                 'task_id' => $task->id,
@@ -98,7 +93,6 @@ class BonusFeaturesTest extends TestCase
         $typingRes->assertStatus(200);
         $typingRes->assertJsonPath('success', true);
 
-        // Test SSE polling endpoint for events
         $streamPoll = $this->getJson('/api/realtime/stream?poll=1');
         $streamPoll->assertStatus(200);
         $streamPoll->assertJsonPath('success', true);
@@ -116,19 +110,16 @@ class BonusFeaturesTest extends TestCase
         $etag = $firstRes->headers->get('ETag');
         $this->assertNotEmpty($etag);
 
-        // Matching ETag returns 304 Not Modified
         $secondRes = $this->withHeader('If-None-Match', $etag)
             ->getJson('/api/tasks');
         $secondRes->assertStatus(304);
 
-        // Mutating task creates new version
         $createRes = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->postJson('/api/tasks', [
                 'title' => 'New Invalidation Task',
             ]);
         $createRes->assertStatus(201);
 
-        // Previous ETag no longer matches 304, returns 200 with new data
         $thirdRes = $this->withHeader('If-None-Match', $etag)
             ->getJson('/api/tasks');
         $thirdRes->assertStatus(200);

@@ -34,7 +34,6 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  // Send periodic presence heartbeat
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
@@ -47,7 +46,6 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
 
-  // Connect to SSE stream or fallback to short polling
   useEffect(() => {
     if (!isAuthenticated) {
       setIsConnected(false);

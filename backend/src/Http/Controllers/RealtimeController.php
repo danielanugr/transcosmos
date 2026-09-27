@@ -36,7 +36,6 @@ class RealtimeController extends Controller
             $lastTime = microtime(true) - 10;
             $startTime = time();
 
-            // Initial connection event with active users
             $initialPayload = json_encode([
                 'active_users' => $this->realtime->getActiveUsers(),
                 'connected_at' => now()->toIso8601String(),

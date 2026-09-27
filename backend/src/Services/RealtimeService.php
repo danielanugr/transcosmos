@@ -24,7 +24,6 @@ class RealtimeService
         $events = Cache::get(self::EVENTS_CACHE_KEY, []);
         $events[] = $payload;
 
-        // Keep last MAX_EVENTS
         if (count($events) > self::MAX_EVENTS) {
             $events = array_slice($events, -self::MAX_EVENTS);
         }
