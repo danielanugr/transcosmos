@@ -7,24 +7,22 @@ Full-stack technical assessment implementation featuring a modern Laravel 12 RES
 ```
 project-root/
 ├── backend/
-│   ├── app/
-│   ├── bootstrap/
+│   ├── src/
 │   ├── config/
 │   ├── database/
-│   ├── public/
-│   ├── routes/
-│   ├── storage/
 │   ├── tests/
-│   ├── artisan
-│   ├── composer.json
 │   └── README.md
-├── documentation/
-│   ├── api-docs/
-│   │   └── openapi.yaml
-│   ├── architecture.md
-│   └── setup-guide.md
-├── Candidate-Instructions.md
-└── README.md
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── tests/
+│   └── README.md
+├── README.md
+└── documentation/
+    ├── api-docs/
+    │   └── openapi.yaml
+    ├── architecture.md
+    └── setup-guide.md
 ```
 
 ## Part 1 Implementation Summary (Laravel 12)
