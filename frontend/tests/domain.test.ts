@@ -15,7 +15,7 @@ describe('Domain Logic and Filter Rules', () => {
   });
 
   it('verifies client chunk size boundary calculation', () => {
-    const CHUNK_SIZE = 1024 * 1024; // 1MB
+    const CHUNK_SIZE = 1024 * 1024;
     const fileSize = 12 * 1024 * 1024 + 500;
     const totalChunks = Math.ceil(fileSize / CHUNK_SIZE);
     expect(totalChunks).toBe(13);

@@ -44,7 +44,6 @@ class ApiClient {
     return data;
   }
 
-  // Authentication
   async login(email: string, password: string): Promise<{ token: string; user: User }> {
     const res = await this.request<ApiResponse<{ token: string; user: User }>>('/auth/login', {
       method: 'POST',
@@ -71,7 +70,6 @@ class ApiClient {
     return res.data;
   }
 
-  // Tasks
   async getTasks(params: TaskFilterParams = {}): Promise<PaginatedTasks> {
     const query = new URLSearchParams();
     if (params.status && params.status !== 'all') query.set('status', params.status);
@@ -139,7 +137,6 @@ class ApiClient {
     return res.data;
   }
 
-  // Attachments
   async uploadAttachment(taskId: number, file: File): Promise<TaskAttachment> {
     const formData = new FormData();
     formData.append('file', file);
@@ -183,7 +180,6 @@ class ApiClient {
     return `${API_BASE}/attachments/${id}/download`;
   }
 
-  // Comments
   async getComments(taskId: number): Promise<TaskComment[]> {
     const res = await this.request<ApiResponse<TaskComment[]>>(`/tasks/${taskId}/comments`);
     return res.data;
@@ -203,7 +199,6 @@ class ApiClient {
     });
   }
 
-  // Queue
   async getQueueStats(): Promise<{ pending: number; failed: number; total: number }> {
     const res = await this.request<ApiResponse<{ pending: number; failed: number; total: number }>>('/queue/stats');
     return res.data;

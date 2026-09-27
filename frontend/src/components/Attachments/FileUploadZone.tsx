@@ -25,7 +25,7 @@ export function FileUploadZone({ taskId, onUploaded }: FileUploadZoneProps) {
 
     try {
       // If file > 5MB, perform chunked upload
-      const CHUNK_SIZE = 1024 * 1024; // 1MB chunk
+      const CHUNK_SIZE = 1024 * 1024;
       if (file.size > 5 * 1024 * 1024) {
         const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
         const uploadId = 'up_' + Math.random().toString(36).substring(2, 10);
