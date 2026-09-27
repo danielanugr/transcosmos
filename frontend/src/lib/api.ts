@@ -3,6 +3,20 @@ import { ApiResponse, PaginatedTasks, Task, TaskAttachment, TaskComment, TaskFil
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
 class ApiClient {
+  private cache = new Map<string, { data: any; expiry: number }>();
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  getStorageUrl(path?: string | null): string | null {
+    if (!path) return null;
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    const base = API_BASE.replace(/\/api\/?$/, '');
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `${base}/${cleanPath}`;
+  }
+
   private getToken(): string | null {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('auth_token');
@@ -63,6 +77,7 @@ class ApiClient {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
       }
+      this.clearCache();
     }
   }
 
@@ -93,35 +108,44 @@ class ApiClient {
 
     const queryString = query.toString();
     const endpoint = `/tasks${queryString ? `?${queryString}` : ''}`;
+
+    const cacheKey = `tasks:${endpoint}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached && cached.expiry > Date.now()) {
+      return cached.data;
+    }
+
     const res = await this.request<any>(endpoint);
 
+    let result: PaginatedTasks;
     if (Array.isArray(res?.data)) {
-      return {
+      result = {
         data: res.data,
         current_page: res.meta?.page || res.meta?.current_page || 1,
         last_page: res.meta?.last_page || 1,
         total: res.meta?.total ?? res.data.length,
         per_page: res.meta?.per_page || params.limit || 12,
       };
-    }
-
-    if (res?.data && Array.isArray(res.data.data)) {
-      return {
+    } else if (res?.data && Array.isArray(res.data.data)) {
+      result = {
         data: res.data.data,
         current_page: res.data.current_page || 1,
         last_page: res.data.last_page || 1,
         total: res.data.total ?? res.data.data.length,
         per_page: res.data.per_page || 12,
       };
+    } else {
+      result = {
+        data: [],
+        current_page: 1,
+        last_page: 1,
+        total: 0,
+        per_page: 12,
+      };
     }
 
-    return {
-      data: [],
-      current_page: 1,
-      last_page: 1,
-      total: 0,
-      per_page: 12,
-    };
+    this.cache.set(cacheKey, { data: result, expiry: Date.now() + 10000 });
+    return result;
   }
 
   async getTask(id: number): Promise<Task> {
@@ -138,6 +162,7 @@ class ApiClient {
     assigned_to?: number | null;
     assigned_user_id?: number | null;
   }): Promise<Task> {
+    this.clearCache();
     const bodyPayload = {
       ...payload,
       assigned_user_id: payload.assigned_user_id ?? payload.assigned_to ?? null,
@@ -150,6 +175,7 @@ class ApiClient {
   }
 
   async updateTask(id: number, payload: Partial<Task>): Promise<Task> {
+    this.clearCache();
     const bodyPayload: any = {
       ...payload,
     };
@@ -164,12 +190,14 @@ class ApiClient {
   }
 
   async deleteTask(id: number): Promise<void> {
+    this.clearCache();
     await this.request(`/tasks/${id}`, {
       method: 'DELETE',
     });
   }
 
   async bulkUpdateStatus(taskIds: number[], status: string): Promise<{ queued: boolean; updated: number }> {
+    this.clearCache();
     const res = await this.request<ApiResponse<{ queued: boolean; updated: number }>>('/tasks/bulk-status', {
       method: 'POST',
       body: JSON.stringify({ task_ids: taskIds, status }),
@@ -186,6 +214,7 @@ class ApiClient {
   }
 
   async uploadAttachment(taskId: number, file: File): Promise<TaskAttachment> {
+    this.clearCache();
     const formData = new FormData();
     formData.append('file', file);
 
@@ -204,6 +233,7 @@ class ApiClient {
     totalChunks: number,
     chunkBlob: Blob
   ): Promise<{ complete: boolean; received_chunks: number; attachment?: TaskAttachment }> {
+    this.clearCache();
     const formData = new FormData();
     formData.append('upload_id', uploadId);
     formData.append('file_name', fileName);
@@ -219,6 +249,7 @@ class ApiClient {
   }
 
   async deleteAttachment(id: number): Promise<void> {
+    this.clearCache();
     await this.request(`/attachments/${id}`, {
       method: 'DELETE',
     });

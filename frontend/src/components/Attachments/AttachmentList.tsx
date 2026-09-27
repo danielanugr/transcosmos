@@ -57,15 +57,25 @@ export function AttachmentList({ attachments, onAttachmentDeleted }: AttachmentL
             className="flex items-center justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition-colors"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="p-2 rounded-lg bg-slate-900 text-slate-400 shrink-0 border border-slate-800">
-                {isImage ? (
-                  <ImageIcon className="w-4 h-4 text-emerald-400" />
-                ) : isVideo ? (
-                  <Video className="w-4 h-4 text-purple-400" />
-                ) : (
-                  <FileText className="w-4 h-4 text-blue-400" />
-                )}
-              </div>
+              {att.thumbnail_path ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={api.getStorageUrl(att.thumbnail_path) || ''}
+                  alt={att.file_name}
+                  loading="lazy"
+                  className="w-8 h-8 rounded object-cover border border-slate-700 shrink-0 bg-slate-900"
+                />
+              ) : (
+                <div className="p-2 rounded-lg bg-slate-900 text-slate-400 shrink-0 border border-slate-800">
+                  {isImage ? (
+                    <ImageIcon className="w-4 h-4 text-emerald-400" />
+                  ) : isVideo ? (
+                    <Video className="w-4 h-4 text-purple-400" />
+                  ) : (
+                    <FileText className="w-4 h-4 text-blue-400" />
+                  )}
+                </div>
+              )}
 
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
