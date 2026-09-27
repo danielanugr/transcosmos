@@ -16,7 +16,7 @@ class JwtService
     public function __construct()
     {
         $this->secret = config('app.key') ?: 'base64:task-management-jwt-secret-key-32chars!';
-        $this->ttl = 86400; // 24 hours
+        $this->ttl = 86400;
     }
 
     public function generateToken(User $user): string

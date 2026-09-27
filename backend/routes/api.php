@@ -9,7 +9,6 @@ use App\Http\Controllers\QueueController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
-// Health Check
 Route::get('/health', function () {
     return response()->json([
         'success' => true,
@@ -23,14 +22,12 @@ Route::get('/health', function () {
     ]);
 });
 
-// Authentication Endpoints
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.jwt');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth.jwt');
 });
 
-// Task Management Endpoints
 Route::get('/tasks', [TaskController::class, 'index']);
 Route::get('/tasks/{id}', [TaskController::class, 'show']);
 
@@ -41,21 +38,17 @@ Route::middleware('auth.jwt')->group(function () {
     Route::post('/tasks/bulk-status', [TaskController::class, 'bulkStatus']);
     Route::post('/tasks/export', [TaskController::class, 'export']);
 
-    // Attachments
     Route::post('/tasks/{id}/attachments', [AttachmentController::class, 'upload']);
     Route::post('/tasks/{id}/attachments/chunk', [AttachmentController::class, 'uploadChunk']);
     Route::delete('/attachments/{id}', [AttachmentController::class, 'destroy']);
     Route::delete('/attachments/{id}/delete', [AttachmentController::class, 'destroy']);
 
-    // Comments
     Route::post('/tasks/{id}/comments', [CommentController::class, 'store']);
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
 
-    // Queue Work on Demand
     Route::post('/queue/work', [QueueController::class, 'work']);
 });
 
-// Public Attachment Download and Comment Reading
 Route::get('/attachments/{id}/download', [AttachmentController::class, 'download']);
 Route::get('/tasks/{id}/comments', [CommentController::class, 'index']);
 Route::get('/queue/stats', [QueueController::class, 'stats']);

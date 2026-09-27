@@ -39,7 +39,6 @@ class AttachmentController extends Controller
             $userId = $request->user()?->id;
             $attachment = $this->uploadService->uploadAttachment($task->id, $file, $userId);
 
-            // Queue post-processing
             ProcessFileJob::dispatch($attachment->id);
 
             return response()->json([

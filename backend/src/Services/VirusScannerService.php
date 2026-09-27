@@ -40,7 +40,6 @@ class VirusScannerService
             return ['clean' => false, 'threat' => 'Error reading file stream.'];
         }
 
-        // 1. Check EICAR standard antivirus test signature
         if (str_contains($buffer, self::EICAR_TEST_STRING)) {
             return [
                 'clean' => false,
@@ -48,7 +47,6 @@ class VirusScannerService
             ];
         }
 
-        // 2. Check for Windows PE Executable signature (MZ header) in disguised files
         if (str_starts_with($buffer, "MZ")) {
             return [
                 'clean' => false,
@@ -56,7 +54,6 @@ class VirusScannerService
             ];
         }
 
-        // 3. Check for Linux ELF binary header
         if (str_starts_with($buffer, "\x7FELF")) {
             return [
                 'clean' => false,
@@ -64,7 +61,6 @@ class VirusScannerService
             ];
         }
 
-        // 4. Check for embedded PHP / script tags inside uploaded images or media
         if (preg_match('/(<\?php|<\?=|<script\b)/i', $buffer)) {
             return [
                 'clean' => false,

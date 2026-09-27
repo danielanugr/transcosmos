@@ -35,7 +35,6 @@ class AuthenticateWithJwt
                 return $next($request);
             }
         } catch (Throwable $e) {
-            // Check if Sanctum token exists
             try {
                 $accessToken = PersonalAccessToken::findToken($token);
                 if ($accessToken && $accessToken->tokenable) {
@@ -45,7 +44,6 @@ class AuthenticateWithJwt
                     return $next($request);
                 }
             } catch (Throwable) {
-                // Table might not exist or token invalid
             }
 
             return response()->json([

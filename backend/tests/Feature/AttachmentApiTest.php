@@ -89,7 +89,6 @@ class AttachmentApiTest extends TestCase
         $chunk1 = UploadedFile::fake()->createWithContent('chunk_0.part', 'Part 1 of file');
         $chunk2 = UploadedFile::fake()->createWithContent('chunk_1.part', 'Part 2 of file');
 
-        // Chunk 0
         $res1 = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->post("/api/tasks/{$this->task->id}/attachments/chunk", [
                 'upload_id' => $uploadId,
@@ -107,7 +106,6 @@ class AttachmentApiTest extends TestCase
                 ],
             ]);
 
-        // Chunk 1 (final)
         $res2 = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->post("/api/tasks/{$this->task->id}/attachments/chunk", [
                 'upload_id' => $uploadId,

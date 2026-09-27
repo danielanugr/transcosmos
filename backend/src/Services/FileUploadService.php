@@ -39,7 +39,6 @@ class FileUploadService
         $originalName = $file->getClientOriginalName();
         $fileSize = $file->getSize();
 
-        // 1. MIME verification via finfo with test mock fallback
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $detectedMime = $realPath ? finfo_file($finfo, $realPath) : null;
         finfo_close($finfo);
@@ -52,19 +51,16 @@ class FileUploadService
             throw new RuntimeException("Unsupported file type: {$mimeType}. Allowed formats include images, documents, and videos.", 422);
         }
 
-        // 2. Virus scan simulation
         $scan = $this->virusScanner->scanFile($realPath);
         if (!$scan['clean']) {
             throw new RuntimeException("Security violation: " . $scan['threat'], 422);
         }
 
-        // 3. Store file securely
         $ext = $file->getClientOriginalExtension();
         $uniqueName = bin2hex(random_bytes(16)) . ($ext ? ".{$ext}" : '');
         $storedRelPath = $file->storeAs('uploads', $uniqueName, 'public');
         $absolutePath = storage_path('app/public/' . $storedRelPath);
 
-        // 4. Generate thumbnail if image
         $thumbnailPath = null;
         if ($this->thumbnailService->isSupportedImage($mimeType)) {
             $thumbName = 'thumb_' . $uniqueName;
@@ -75,7 +71,6 @@ class FileUploadService
             }
         }
 
-        // 5. Versioning
         $latestVersion = TaskAttachment::where('task_id', $taskId)
             ->where('file_name', $originalName)
             ->max('version') ?? 0;
@@ -134,7 +129,6 @@ class FileUploadService
             ];
         }
 
-        // Assemble chunks into final file
         $combinedTemp = $tempDir . DIRECTORY_SEPARATOR . 'assembled_' . bin2hex(random_bytes(8));
         $out = fopen($combinedTemp, 'wb');
 
@@ -161,7 +155,7 @@ class FileUploadService
             $fileName,
             null,
             null,
-            true // test mode to allow moving
+            true
         );
 
         try {

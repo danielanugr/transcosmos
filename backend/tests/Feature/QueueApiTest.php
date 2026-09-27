@@ -59,7 +59,6 @@ class QueueApiTest extends TestCase
                 ],
             ]);
 
-        // Process queued job via work endpoint
         $workRes = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->postJson('/api/queue/work', ['limit' => 5]);
 
