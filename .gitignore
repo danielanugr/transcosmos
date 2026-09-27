@@ -1,0 +1,12 @@
+/task_management
+/backend/public/task_management
+/backend/storage/uploads/*
+!/backend/storage/uploads/thumbnails
+/backend/storage/uploads/thumbnails/*
+/backend/storage/temp/*
+/backend/storage/exports/*
+/backend/storage/logs/*
+!/backend/storage/logs/.gitkeep
+!/backend/storage/uploads/.gitkeep
+!/backend/storage/temp/.gitkeep
+!/backend/storage/exports/.gitkeep
