@@ -8,7 +8,7 @@ import { LogIn, KeyRound, Mail, UserCheck, Shield } from 'lucide-react';
 export function LoginForm() {
   const { login } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('john@example.com');
+  const [email, setEmail] = useState('alice@example.com');
   const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
 
@@ -106,19 +106,19 @@ export function LoginForm() {
         <div className="grid grid-cols-2 gap-2 text-xs">
           <button
             type="button"
-            onClick={() => handleQuickFill('john@example.com')}
+            onClick={() => handleQuickFill('alice@example.com')}
             className="p-2 text-left rounded-lg bg-slate-950/40 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors"
           >
-            <div className="font-semibold text-slate-200">Admin (John)</div>
-            <div className="text-[11px] text-slate-500 truncate">john@example.com</div>
+            <div className="font-semibold text-slate-200">Admin (Alice)</div>
+            <div className="text-[11px] text-slate-500 truncate">alice@example.com</div>
           </button>
           <button
             type="button"
-            onClick={() => handleQuickFill('jane@example.com')}
+            onClick={() => handleQuickFill('bob@example.com')}
             className="p-2 text-left rounded-lg bg-slate-950/40 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors"
           >
-            <div className="font-semibold text-slate-200">User (Jane)</div>
-            <div className="text-[11px] text-slate-500 truncate">jane@example.com</div>
+            <div className="font-semibold text-slate-200">Manager (Bob)</div>
+            <div className="text-[11px] text-slate-500 truncate">bob@example.com</div>
           </button>
         </div>
       </div>

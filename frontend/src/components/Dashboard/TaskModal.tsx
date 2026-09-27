@@ -173,11 +173,11 @@ export function TaskModal({ isOpen, onClose, task, onSaved }: TaskModalProps) {
               className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
             >
               <option value="">Unassigned</option>
-              <option value="1">John Doe (Admin)</option>
-              <option value="2">Jane Smith (User)</option>
-              <option value="3">Bob Johnson (User)</option>
-              <option value="4">Alice Williams (User)</option>
-              <option value="5">Charlie Brown (User)</option>
+              <option value="1">Alice Johnson (Admin)</option>
+              <option value="2">Bob Smith (Manager)</option>
+              <option value="3">Charlie Brown (Member)</option>
+              <option value="4">Diana Prince (Member)</option>
+              <option value="5">Edward Davis (Member)</option>
             </select>
           </div>
         </div>
