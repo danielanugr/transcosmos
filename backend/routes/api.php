@@ -59,3 +59,22 @@ Route::get('/queue/stats', [QueueController::class, 'stats']);
 
 Route::get('/realtime/stream', [RealtimeController::class, 'stream']);
 Route::get('/realtime/presence', [RealtimeController::class, 'getPresence']);
+
+Route::get('/cache/stats', function (\App\Services\AdvancedCacheService $cache) {
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'version' => $cache->getVersion(),
+            'telemetry' => $cache->getTelemetryStats(),
+        ],
+    ]);
+});
+
+Route::post('/cache/flush', function (\App\Services\AdvancedCacheService $cache) {
+    $newVersion = $cache->invalidateNamespace();
+    return response()->json([
+        'success' => true,
+        'message' => 'Cache namespace bumped and invalidated successfully.',
+        'new_version' => $newVersion,
+    ]);
+})->middleware('auth.jwt');

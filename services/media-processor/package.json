@@ -1,0 +1,10 @@
+{
+  "name": "media-processor-service",
+  "version": "1.0.0",
+  "description": "Standalone Media Processing Microservice for Task Management Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  }
+}

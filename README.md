@@ -93,9 +93,9 @@ project-root/
 - **Architecture Documentation & ADRs**: [`documentation/architecture.md`](file:///d:/test/trans-cosmos/documentation/architecture.md)
 - **Production Deployment Guide**: [`documentation/deployment-guide.md`](file:///d:/test/trans-cosmos/documentation/deployment-guide.md)
 
-#### 4.2 Automated Test Coverage (57 Tests Total)
-- **Backend Tests (41 PHPUnit Tests - 100% Passing)**:
-  - Unit: `VirusScannerServiceTest`, `ImageThumbnailServiceTest`, `JwtServiceTest`
+#### 4.2 Automated Test Coverage (61 Tests Total)
+- **Backend Tests (45 PHPUnit Tests - 100% Passing)**:
+  - Unit: `VirusScannerServiceTest`, `ImageThumbnailServiceTest`, `JwtServiceTest`, `AdvancedCacheServiceTest`
   - Feature: `TaskApiTest`, `AttachmentApiTest`, `AuthApiTest`, `DatabaseIntegrationTest`, `QueueApiTest`, `BonusFeaturesTest`
 - **Frontend Tests (16 Vitest Tests - 100% Passing)**:
   - Domain & Type rules: `domain.test.ts`
@@ -103,6 +103,29 @@ project-root/
   - API Client & Error handling: `api.test.ts`
   - Bonus Features & Realtime: `bonus.test.ts`
   - End-to-End User Flow simulation: `userFlows.test.ts`
+
+---
+
+### Part 5: Additional Opportunities & Extra Features Implemented
+
+#### 1. CI/CD Pipeline Setup
+- **GitHub Actions Workflow**: [`.github/workflows/ci.yml`](file:///d:/test/trans-cosmos/.github/workflows/ci.yml)
+  - PHP 8.2 & 8.3 matrix testing with SQLite/MySQL setup and composer security audit.
+  - Node.js 18 & 20 matrix testing with linting, Vitest test suite, and Next.js Turbopack production build.
+  - Multi-container Docker build verification and continuous deployment simulation.
+- **Local CI Runner Script**: Run the entire CI pipeline locally with a single command via [`scripts/verify-ci.bat`](file:///d:/test/trans-cosmos/scripts/verify-ci.bat) or [`scripts/verify-ci.sh`](file:///d:/test/trans-cosmos/scripts/verify-ci.sh).
+
+#### 2. Advanced Caching Strategies
+- **Multi-Tier L1/L2 Caching**: [`AdvancedCacheService.php`](file:///d:/test/trans-cosmos/backend/src/Services/AdvancedCacheService.php) with request-scoped memoization (L1) and persistent cache (L2).
+- **Cache Stampede Protection**: Atomic mutex locks (`Cache::lock()`) prevent database dogpiling when cache expires under high concurrency.
+- **HTTP Conditional Requests & ETag**: Automatic `ETag` generation with `If-None-Match` validation returning HTTP 304 Not Modified.
+- **Telemetry & Inspection**: Real-time cache metrics (`l1_hits`, `l2_hits`, `misses`, `writes`, `invalidations`) via `/api/cache/stats` and admin flush via `/api/cache/flush`.
+
+#### 3. Microservices Architecture Implementation
+- **Architecture Documentation**: [`documentation/microservices-architecture.md`](file:///d:/test/trans-cosmos/documentation/microservices-architecture.md)
+- **Media Processor Microservice**: [`services/media-processor/`](file:///d:/test/trans-cosmos/services/media-processor/) (Port 8001) for decoupled chunk aggregation, threat scanning, and thumbnail generation.
+- **Notification Microservice**: [`services/notification-service/`](file:///d:/test/trans-cosmos/services/notification-service/) (Port 8002) for asynchronous event dispatching with Dead Letter Queue (DLQ).
+- **Docker Compose Orchestration**: [`docker-compose.microservices.yml`](file:///d:/test/trans-cosmos/docker-compose.microservices.yml) orchestrating API Gateway, Task Service, Media Processor, Notification Service, MySQL, and Redis.
 
 ---
 

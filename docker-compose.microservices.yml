@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # 1. Relational Database Service (MySQL)
+  mysql:
+    image: mysql:8.0
+    container_name: tm_micro_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: task_management
+      MYSQL_USER: tm_user
+      MYSQL_PASSWORD: SecureDatabasePassword123!
+      MYSQL_ROOT_PASSWORD: RootSecurePassword123!
+    volumes:
+      - mysql_micro_data:/var/lib/mysql
+      - ./backend/database/dump.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. In-Memory Distributed Cache & Event Broker (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: tm_micro_redis
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_micro_data:/data
+    networks:
+      - microservices_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # 3. Core Task API & API Gateway Service (Laravel 12)
+  api-gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tm_micro_api_gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_KEY: base64:your-generated-production-app-key-here
+      APP_URL: http://api-gateway:8000
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: task_management
+      DB_USERNAME: tm_user
+      DB_PASSWORD: SecureDatabasePassword123!
+      CACHE_STORE: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MEDIA_PROCESSOR_URL: http://media-processor:8001
+      NOTIFICATION_SERVICE_URL: http://notification-service:8002
+    networks:
+      - microservices_net
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # 4. Media Processing Microservice (Port 8001)
+  media-processor:
+    build:
+      context: ./services/media-processor
+    container_name: tm_micro_media_processor
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      PORT: 8001
+      NODE_ENV: production
+    networks:
+      - microservices_net
+
+  # 5. Notification & Event Dispatcher Microservice (Port 8002)
+  notification-service:
+    build:
+      context: ./services/notification-service
+    container_name: tm_micro_notification_service
+    restart: always
+    ports:
+      - "8002:8002"
+    environment:
+      PORT: 8002
+      NODE_ENV: production
+    networks:
+      - microservices_net
+
+  # 6. Web Dashboard Frontend (Next.js 16)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tm_micro_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api
+      NODE_ENV: production
+    networks:
+      - microservices_net
+    depends_on:
+      - api-gateway
+
+networks:
+  microservices_net:
+    driver: bridge
+
+volumes:
+  mysql_micro_data:
+    driver: local
+  redis_micro_data:
+    driver: local

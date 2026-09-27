@@ -319,6 +319,17 @@ class ApiClient {
   getRealtimeStreamUrl(): string {
     return `${API_BASE}/realtime/stream`;
   }
+
+  async getCacheStats(): Promise<{ version: number; telemetry: any }> {
+    const res = await this.request<ApiResponse<{ version: number; telemetry: any }>>('/cache/stats');
+    return res.data;
+  }
+
+  async flushBackendCache(): Promise<any> {
+    this.clearCache();
+    const res = await this.request<ApiResponse<any>>('/cache/flush', { method: 'POST' });
+    return res.data;
+  }
 }
 
 export const api = new ApiClient();
