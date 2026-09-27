@@ -1,21 +1,33 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/lib/authContext';
 import { LoginForm } from '@/components/Auth/LoginForm';
 import { DashboardHeader } from '@/components/Dashboard/DashboardHeader';
 import { TaskStats } from '@/components/Dashboard/TaskStats';
 import { TaskFilters } from '@/components/Dashboard/TaskFilters';
 import { TaskList } from '@/components/Dashboard/TaskList';
-import { TaskModal } from '@/components/Dashboard/TaskModal';
-import { TaskDetailModal } from '@/components/Dashboard/TaskDetailModal';
-import { DeleteConfirmModal } from '@/components/Dashboard/DeleteConfirmModal';
 import { api } from '@/lib/api';
 import { Task, TaskFilterParams } from '@/lib/types';
 import { useToast } from '@/components/UI/Toast';
+import { useRealtime } from '@/lib/useRealtime';
+
+const TaskModal = dynamic(
+  () => import('@/components/Dashboard/TaskModal').then((mod) => mod.TaskModal),
+  { ssr: false }
+);
+const TaskDetailModal = dynamic(
+  () => import('@/components/Dashboard/TaskDetailModal').then((mod) => mod.TaskDetailModal),
+  { ssr: false }
+);
+const DeleteConfirmModal = dynamic(
+  () => import('@/components/Dashboard/DeleteConfirmModal').then((mod) => mod.DeleteConfirmModal),
+  { ssr: false }
+);
 
 export default function Home() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -66,15 +78,6 @@ export default function Home() {
     }
   }, [isAuthenticated, loadTasks]);
 
-  // Real-time synchronization poll every 10 seconds (SSE / Live update simulation)
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const interval = setInterval(() => {
-      loadTasks(true);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, loadTasks]);
-
   const handleToggleSelect = (taskId: number) => {
     setSelectedIds((prev) =>
       prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
@@ -120,6 +123,11 @@ export default function Home() {
     );
   }
 
+  const { onlineUsers, typingMap, sendTyping, isConnected } = useRealtime({
+    onTaskChange: () => loadTasks(true),
+    onCommentChange: () => loadTasks(true),
+  });
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       <DashboardHeader
@@ -128,6 +136,8 @@ export default function Home() {
           setIsTaskModalOpen(true);
         }}
         onRefresh={() => loadTasks(false)}
+        onlineUsers={onlineUsers}
+        isRealtimeConnected={isConnected}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -211,6 +221,14 @@ export default function Home() {
         }}
         taskId={detailTaskId}
         onTaskUpdated={() => loadTasks(true)}
+        typingUser={
+          detailTaskId && typingMap[detailTaskId]?.is_typing && typingMap[detailTaskId]?.user_id !== user?.id
+            ? typingMap[detailTaskId].user_name
+            : null
+        }
+        onTyping={(isTyping) => {
+          if (detailTaskId) sendTyping(detailTaskId, isTyping);
+        }}
       />
 
       <DeleteConfirmModal

@@ -17,6 +17,8 @@ interface TaskDetailModalProps {
   onClose: () => void;
   taskId: number | null;
   onTaskUpdated: () => void;
+  typingUser?: string | null;
+  onTyping?: (isTyping: boolean) => void;
 }
 
 export function TaskDetailModal({
@@ -24,6 +26,8 @@ export function TaskDetailModal({
   onClose,
   taskId,
   onTaskUpdated,
+  typingUser = null,
+  onTyping,
 }: TaskDetailModalProps) {
   const { toast } = useToast();
   const [task, setTask] = useState<Task | null>(null);
@@ -192,12 +196,25 @@ export function TaskDetailModal({
                     onTaskUpdated();
                   }}
                 />
+
+                {typingUser && (
+                  <div className="flex items-center gap-2 text-[11px] text-blue-400 italic py-1 px-1">
+                    <span className="flex gap-1 items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce [animation-delay:0.2s]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce [animation-delay:0.4s]" />
+                    </span>
+                    <span>{typingUser} is typing a comment...</span>
+                  </div>
+                )}
+
                 <AddCommentForm
                   taskId={task.id}
                   onCommentAdded={() => {
                     fetchTask();
                     onTaskUpdated();
                   }}
+                  onTyping={onTyping}
                 />
               </div>
             )}

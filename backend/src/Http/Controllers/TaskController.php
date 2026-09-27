@@ -8,56 +8,86 @@ use App\Jobs\BulkTaskStatusUpdateJob;
 use App\Jobs\ExportDataJob;
 use App\Jobs\SendTaskAssignedEmailJob;
 use App\Models\Task;
+use App\Services\RealtimeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class TaskController extends Controller
 {
+    public function __construct(private RealtimeService $realtime) {}
+
+    private function invalidateTasksCache(): void
+    {
+        $current = (int) Cache::get('tasks_cache_version', 1);
+        Cache::put('tasks_cache_version', $current + 1, now()->addDays(7));
+    }
+
     public function index(Request $request): JsonResponse
     {
-        $query = Task::with(['assignedUser:id,name,email', 'creator:id,name,email'])
-            ->withCount(['attachments', 'comments']);
+        $version = (int) Cache::get('tasks_cache_version', 1);
+        $cacheKey = "tasks:index:v{$version}:" . md5($request->fullUrl());
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->query('status'));
+        $cached = Cache::remember($cacheKey, 60, function () use ($request) {
+            $query = Task::with(['assignedUser:id,name,email', 'creator:id,name,email'])
+                ->withCount(['attachments', 'comments']);
+
+            if ($request->filled('status') && $request->query('status') !== 'all') {
+                $query->where('status', $request->query('status'));
+            }
+
+            if ($request->filled('priority') && $request->query('priority') !== 'all') {
+                $query->where('priority', $request->query('priority'));
+            }
+
+            if ($request->filled('assigned_user_id')) {
+                $query->where('assigned_user_id', (int) $request->query('assigned_user_id'));
+            }
+
+            if ($request->filled('search')) {
+                $search = '%' . $request->query('search') . '%';
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', $search)
+                      ->orWhere('description', 'like', $search);
+                });
+            }
+
+            $sortBy = $request->query('sort_by', 'created_at');
+            $allowedSorts = ['id', 'title', 'status', 'priority', 'due_date', 'created_at', 'updated_at'];
+            $column = in_array(strtolower($sortBy), $allowedSorts, true) ? strtolower($sortBy) : 'created_at';
+            $order = strtolower((string) $request->query('order', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+            $query->orderBy($column, $order);
+
+            $perPage = min(100, max(1, (int) $request->query('per_page', $request->query('limit', 10))));
+            $paginator = $query->paginate($perPage);
+
+            return [
+                'data' => $paginator->items(),
+                'meta' => [
+                    'total' => $paginator->total(),
+                    'page' => $paginator->currentPage(),
+                    'per_page' => $paginator->perPage(),
+                    'last_page' => $paginator->lastPage(),
+                ],
+            ];
+        });
+
+        $etag = '"' . md5(json_encode($cached['data']) . $cached['meta']['total']) . '"';
+
+        if ($request->header('If-None-Match') === $etag) {
+            return response()->json(null, 304, [
+                'ETag' => $etag,
+                'Cache-Control' => 'private, max-age=60, must-revalidate',
+            ]);
         }
-
-        if ($request->filled('priority')) {
-            $query->where('priority', $request->query('priority'));
-        }
-
-        if ($request->filled('assigned_user_id')) {
-            $query->where('assigned_user_id', (int) $request->query('assigned_user_id'));
-        }
-
-        if ($request->filled('search')) {
-            $search = '%' . $request->query('search') . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', $search)
-                  ->orWhere('description', 'like', $search);
-            });
-        }
-
-        $sortBy = $request->query('sort_by', 'created_at');
-        $allowedSorts = ['id', 'title', 'status', 'priority', 'due_date', 'created_at', 'updated_at'];
-        $column = in_array(strtolower($sortBy), $allowedSorts, true) ? strtolower($sortBy) : 'created_at';
-        $order = strtolower((string) $request->query('order', 'desc')) === 'asc' ? 'asc' : 'desc';
-
-        $query->orderBy($column, $order);
-
-        $perPage = min(100, max(1, (int) $request->query('per_page', $request->query('limit', 10))));
-        $paginator = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'data' => $paginator->items(),
-            'meta' => [
-                'total' => $paginator->total(),
-                'page' => $paginator->currentPage(),
-                'per_page' => $paginator->perPage(),
-                'last_page' => $paginator->lastPage(),
-            ],
-        ]);
+            'data' => $cached['data'],
+            'meta' => $cached['meta'],
+        ])->header('ETag', $etag)
+          ->header('Cache-Control', 'private, max-age=60, must-revalidate');
     }
 
     public function show(int $id): JsonResponse
@@ -102,6 +132,8 @@ class TaskController extends Controller
         }
 
         $task->load(['assignedUser:id,name,email', 'creator:id,name,email']);
+        $this->invalidateTasksCache();
+        $this->realtime->broadcast('task.created', ['task' => $task]);
 
         return response()->json([
             'success' => true,
@@ -137,6 +169,8 @@ class TaskController extends Controller
         }
 
         $task->load(['assignedUser:id,name,email', 'creator:id,name,email']);
+        $this->invalidateTasksCache();
+        $this->realtime->broadcast('task.updated', ['task' => $task]);
 
         return response()->json([
             'success' => true,
@@ -156,6 +190,8 @@ class TaskController extends Controller
         }
 
         $task->delete();
+        $this->invalidateTasksCache();
+        $this->realtime->broadcast('task.deleted', ['task_id' => $id]);
 
         return response()->json([
             'success' => true,
@@ -177,6 +213,12 @@ class TaskController extends Controller
 
         if ($async) {
             BulkTaskStatusUpdateJob::dispatch($validated['task_ids'], $validated['status']);
+            $this->invalidateTasksCache();
+            $this->realtime->broadcast('task.bulk_status', [
+                'task_ids' => $validated['task_ids'],
+                'status' => $validated['status'],
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Bulk task status update queued for background processing.',
@@ -189,6 +231,11 @@ class TaskController extends Controller
         }
 
         $count = Task::whereIn('id', $validated['task_ids'])->update(['status' => $validated['status']]);
+        $this->invalidateTasksCache();
+        $this->realtime->broadcast('task.bulk_status', [
+            'task_ids' => $validated['task_ids'],
+            'status' => $validated['status'],
+        ]);
 
         return response()->json([
             'success' => true,

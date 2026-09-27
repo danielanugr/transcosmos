@@ -8,16 +8,32 @@ import { Send } from 'lucide-react';
 interface AddCommentFormProps {
   taskId: number;
   onCommentAdded: () => void;
+  onTyping?: (isTyping: boolean) => void;
 }
 
-export function AddCommentForm({ taskId, onCommentAdded }: AddCommentFormProps) {
+export function AddCommentForm({ taskId, onCommentAdded, onTyping }: AddCommentFormProps) {
   const { toast } = useToast();
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const typingTimerRef = React.useRef<any>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(e.target.value);
+    if (onTyping) {
+      onTyping(true);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = setTimeout(() => {
+        onTyping(false);
+      }, 2000);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
+
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    if (onTyping) onTyping(false);
 
     setSubmitting(true);
     try {
@@ -43,7 +59,7 @@ export function AddCommentForm({ taskId, onCommentAdded }: AddCommentFormProps) 
       <textarea
         rows={2}
         value={comment}
-        onChange={(e) => setComment(e.target.value)}
+        onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder="Write a comment... (Ctrl+Enter to post)"
         className="w-full pl-3.5 pr-12 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 resize-none transition-all"

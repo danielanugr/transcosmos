@@ -59,6 +59,15 @@ class ProcessFileJob implements ShouldQueue
                     'thumbnail_path' => 'storage/uploads/thumbnails/' . $thumbName,
                 ]);
             }
+        } elseif ($thumbnailService->isSupportedVideo($attachment->mime_type) && empty($attachment->thumbnail_path)) {
+            $thumbName = 'thumb_bg_video_' . pathinfo(basename($attachment->file_path), PATHINFO_FILENAME) . '.jpg';
+            $thumbDest = storage_path('app/public/uploads/thumbnails/' . $thumbName);
+            $generated = $thumbnailService->generateVideoThumbnail($thumbDest, 'VIDEO');
+            if ($generated) {
+                $attachment->update([
+                    'thumbnail_path' => 'storage/uploads/thumbnails/' . $thumbName,
+                ]);
+            }
         }
 
         Log::info("Background file processing completed successfully", [

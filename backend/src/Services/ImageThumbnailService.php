@@ -25,6 +25,58 @@ class ImageThumbnailService
         ], true);
     }
 
+    public function isSupportedVideo(string $mimeType): bool
+    {
+        return in_array($mimeType, [
+            'video/mp4',
+            'video/webm',
+            'video/ogg',
+        ], true);
+    }
+
+    public function generateVideoThumbnail(string $destinationPath, string $label = 'VIDEO'): ?string
+    {
+        if (!extension_loaded('gd')) {
+            return null;
+        }
+
+        $width = 320;
+        $height = 180;
+        $image = imagecreatetruecolor($width, $height);
+        if (!$image) {
+            return null;
+        }
+
+        $bg = imagecolorallocate($image, 15, 23, 42);
+        imagefilledrectangle($image, 0, 0, $width, $height, $bg);
+
+        $circleColor = imagecolorallocate($image, 37, 99, 235);
+        imagefilledellipse($image, (int) ($width / 2), (int) ($height / 2), 48, 48);
+
+        $white = imagecolorallocate($image, 255, 255, 255);
+        $cx = (int) ($width / 2);
+        $cy = (int) ($height / 2);
+        $points = [
+            $cx - 6, $cy - 10,
+            $cx - 6, $cy + 10,
+            $cx + 10, $cy,
+        ];
+        imagefilledpolygon($image, $points, $white);
+
+        $textColor = imagecolorallocate($image, 148, 163, 184);
+        imagestring($image, 2, 12, $height - 22, $label, $textColor);
+
+        $destDir = dirname($destinationPath);
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+        }
+
+        $saved = imagejpeg($image, $destinationPath, 85);
+        imagedestroy($image);
+
+        return $saved ? $destinationPath : null;
+    }
+
     public function generate(string $sourcePath, string $destinationPath): ?string
     {
         if (!extension_loaded('gd') || !file_exists($sourcePath)) {

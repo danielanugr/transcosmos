@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { TaskAttachment } from '@/lib/types';
 import { api } from '@/lib/api';
 import { useToast } from '../UI/Toast';
-import { Download, Trash2, FileText, Image as ImageIcon, Video } from 'lucide-react';
+import { Download, Trash2, FileText, Image as ImageIcon, Video, Play } from 'lucide-react';
+import { VideoPlayerModal } from '../UI/VideoPlayerModal';
 
 interface AttachmentListProps {
   attachments: TaskAttachment[];
@@ -14,6 +15,7 @@ interface AttachmentListProps {
 export function AttachmentList({ attachments, onAttachmentDeleted }: AttachmentListProps) {
   const { toast } = useToast();
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [playingVideo, setPlayingVideo] = useState<{ url: string; name: string } | null>(null);
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -83,6 +85,22 @@ export function AttachmentList({ attachments, onAttachmentDeleted }: AttachmentL
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0 pl-3">
+              {isVideo && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPlayingVideo({
+                      url: api.getVideoStreamUrl(att.id),
+                      name: att.file_name,
+                    })
+                  }
+                  className="p-1.5 rounded-lg text-purple-400 hover:text-purple-300 hover:bg-slate-800 transition-colors"
+                  title="Stream Video"
+                  aria-label={`Stream video ${att.file_name}`}
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                </button>
+              )}
               <a
                 href={downloadUrl}
                 target="_blank"
@@ -108,6 +126,13 @@ export function AttachmentList({ attachments, onAttachmentDeleted }: AttachmentL
           </div>
         );
       })}
+
+      <VideoPlayerModal
+        isOpen={!!playingVideo}
+        onClose={() => setPlayingVideo(null)}
+        videoUrl={playingVideo?.url || null}
+        fileName={playingVideo?.name || 'Video Player'}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\QueueController;
+use App\Http\Controllers\RealtimeController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,8 +48,14 @@ Route::middleware('auth.jwt')->group(function () {
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
 
     Route::post('/queue/work', [QueueController::class, 'work']);
+    Route::post('/realtime/presence', [RealtimeController::class, 'updatePresence']);
+    Route::post('/realtime/typing', [RealtimeController::class, 'typing']);
 });
 
 Route::get('/attachments/{id}/download', [AttachmentController::class, 'download']);
+Route::get('/attachments/{id}/stream', [AttachmentController::class, 'stream']);
 Route::get('/tasks/{id}/comments', [CommentController::class, 'index']);
 Route::get('/queue/stats', [QueueController::class, 'stats']);
+
+Route::get('/realtime/stream', [RealtimeController::class, 'stream']);
+Route::get('/realtime/presence', [RealtimeController::class, 'getPresence']);

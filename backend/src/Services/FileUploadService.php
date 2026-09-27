@@ -69,6 +69,14 @@ class FileUploadService
             if ($generated) {
                 $thumbnailPath = 'storage/uploads/thumbnails/' . $thumbName;
             }
+        } elseif ($this->thumbnailService->isSupportedVideo($mimeType)) {
+            $thumbName = 'thumb_video_' . pathinfo($uniqueName, PATHINFO_FILENAME) . '.jpg';
+            $thumbDest = storage_path('app/public/uploads/thumbnails/' . $thumbName);
+            $ext = strtoupper(pathinfo($originalName, PATHINFO_EXTENSION) ?: 'VIDEO');
+            $generated = $this->thumbnailService->generateVideoThumbnail($thumbDest, $ext);
+            if ($generated) {
+                $thumbnailPath = 'storage/uploads/thumbnails/' . $thumbName;
+            }
         }
 
         $latestVersion = TaskAttachment::where('task_id', $taskId)

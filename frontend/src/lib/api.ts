@@ -180,6 +180,10 @@ class ApiClient {
     return `${API_BASE}/attachments/${id}/download`;
   }
 
+  getVideoStreamUrl(id: number): string {
+    return `${API_BASE}/attachments/${id}/stream`;
+  }
+
   async getComments(taskId: number): Promise<TaskComment[]> {
     const res = await this.request<ApiResponse<TaskComment[]>>(`/tasks/${taskId}/comments`);
     return res.data;
@@ -210,6 +214,31 @@ class ApiClient {
       body: JSON.stringify({ limit: 10 }),
     });
     return res.data;
+  }
+
+  async sendPresence(taskId?: number | null): Promise<any> {
+    const res = await this.request<ApiResponse<any>>('/realtime/presence', {
+      method: 'POST',
+      body: JSON.stringify({ task_id: taskId }),
+    });
+    return res.data;
+  }
+
+  async getOnlineUsers(): Promise<any[]> {
+    const res = await this.request<ApiResponse<any[]>>('/realtime/presence');
+    return res.data || [];
+  }
+
+  async sendTyping(taskId: number, isTyping: boolean): Promise<any> {
+    const res = await this.request<ApiResponse<any>>('/realtime/typing', {
+      method: 'POST',
+      body: JSON.stringify({ task_id: taskId, is_typing: isTyping }),
+    });
+    return res.data;
+  }
+
+  getRealtimeStreamUrl(): string {
+    return `${API_BASE}/realtime/stream`;
   }
 }
 

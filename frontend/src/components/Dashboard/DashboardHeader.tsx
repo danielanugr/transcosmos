@@ -5,13 +5,21 @@ import { useAuth } from '@/lib/authContext';
 import { useToast } from '../UI/Toast';
 import { api } from '@/lib/api';
 import { LogOut, Plus, Download, RefreshCw, Layers } from 'lucide-react';
+import { OnlineUser } from '@/lib/useRealtime';
 
 interface DashboardHeaderProps {
   onNewTask: () => void;
   onRefresh: () => void;
+  onlineUsers?: OnlineUser[];
+  isRealtimeConnected?: boolean;
 }
 
-export function DashboardHeader({ onNewTask, onRefresh }: DashboardHeaderProps) {
+export function DashboardHeader({
+  onNewTask,
+  onRefresh,
+  onlineUsers = [],
+  isRealtimeConnected = false,
+}: DashboardHeaderProps) {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [exporting, setExporting] = useState(false);
@@ -50,9 +58,35 @@ export function DashboardHeader({ onNewTask, onRefresh }: DashboardHeaderProps) 
             <Layers className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <span className="font-bold text-slate-100 text-base tracking-tight">TaskManager</span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-100 text-base tracking-tight">TaskManager</span>
+              {isRealtimeConnected && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  Live
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-400">Workspace Tasks & Processing</p>
           </div>
+
+          {onlineUsers && onlineUsers.length > 0 && (
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-300 ml-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{onlineUsers.length} Online</span>
+              <div className="flex -space-x-1 overflow-hidden ml-1">
+                {onlineUsers.slice(0, 3).map((u) => (
+                  <span
+                    key={u.id}
+                    title={`${u.name} (${u.role})`}
+                    className="inline-flex items-center justify-center h-4 w-4 rounded-full ring-1 ring-slate-900 bg-slate-800 text-[9px] text-slate-200 font-bold"
+                  >
+                    {u.name.charAt(0)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">

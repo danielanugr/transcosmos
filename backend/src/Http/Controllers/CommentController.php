@@ -6,11 +6,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\TaskComment;
+use App\Services\RealtimeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    public function __construct(private RealtimeService $realtime) {}
+
     public function index(int $id): JsonResponse
     {
         $task = Task::find($id);
@@ -54,6 +57,11 @@ class CommentController extends Controller
 
         $comment->load('user:id,name,email,role');
 
+        $this->realtime->broadcast('comment.created', [
+            'task_id' => $task->id,
+            'comment' => $comment,
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Comment added successfully.',
@@ -79,7 +87,13 @@ class CommentController extends Controller
             ], 403);
         }
 
+        $taskId = $comment->task_id;
         $comment->delete();
+
+        $this->realtime->broadcast('comment.deleted', [
+            'task_id' => $taskId,
+            'comment_id' => $id,
+        ]);
 
         return response()->json([
             'success' => true,
