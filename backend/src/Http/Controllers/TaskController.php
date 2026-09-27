@@ -63,7 +63,7 @@ class TaskController extends Controller
             $paginator = $query->paginate($perPage);
 
             return [
-                'data' => $paginator->items(),
+                'data' => $paginator->getCollection()->toArray(),
                 'meta' => [
                     'total' => $paginator->total(),
                     'page' => $paginator->currentPage(),

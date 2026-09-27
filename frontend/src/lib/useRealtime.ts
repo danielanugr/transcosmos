@@ -35,16 +35,17 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
   optionsRef.current = options;
 
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated || !user?.id) return;
 
     const reportPresence = () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       api.sendPresence().catch(() => {});
     };
 
     reportPresence();
-    const interval = setInterval(reportPresence, 25000);
+    const interval = setInterval(reportPresence, 35000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -53,10 +54,12 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
       return;
     }
 
-    let eventSource: EventSource | null = null;
-    let pollInterval: any = null;
-    let lastTimestamp = Date.now() / 1000 - 10;
     let isSubscribed = true;
+    let isFetching = false;
+    let lastTimestamp = Date.now() / 1000;
+    let pollInterval: NodeJS.Timeout | null = null;
+    let eventSource: EventSource | null = null;
+    let usePolling = false;
 
     const handleMessageData = (event: string, payload: any) => {
       if (!isSubscribed) return;
@@ -85,72 +88,116 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
       }
     };
 
-    try {
-      const streamUrl = api.getRealtimeStreamUrl();
-      eventSource = new EventSource(streamUrl);
+    const poll = async () => {
+      if (!isSubscribed || isFetching) return;
+      if (typeof document !== 'undefined' && document.hidden) return;
 
-      eventSource.onopen = () => {
-        if (isSubscribed) setIsConnected(true);
-      };
-
-      const eventNames = [
-        'connected',
-        'presence.updated',
-        'user.typing',
-        'task.created',
-        'task.updated',
-        'task.deleted',
-        'task.bulk_status',
-        'comment.created',
-        'comment.deleted',
-      ];
-
-      eventNames.forEach((name) => {
-        eventSource?.addEventListener(name, (e: MessageEvent) => {
-          try {
-            const data = JSON.parse(e.data);
-            handleMessageData(name, data);
-          } catch {}
-        });
-      });
-
-      eventSource.onerror = () => {
-        // Close on error and rely on polling fallback
-        eventSource?.close();
-        setIsConnected(false);
-      };
-    } catch {
-      setIsConnected(false);
-    }
-
-    // Polling fallback every 6 seconds to ensure reliable delta updates
-    pollInterval = setInterval(async () => {
-      if (!isSubscribed) return;
+      isFetching = true;
       try {
         const streamUrl = `${api.getRealtimeStreamUrl()}?poll=1&since=${lastTimestamp}`;
         const res = await fetch(streamUrl);
-        if (!res.ok) return;
+        if (!res.ok) {
+          setIsConnected(false);
+          return;
+        }
         const json = await res.json();
         if (json.success) {
+          setIsConnected(true);
+          if (json.timestamp) {
+            lastTimestamp = json.timestamp;
+          }
           if (Array.isArray(json.active_users)) {
             setOnlineUsers(json.active_users);
           }
           if (Array.isArray(json.events)) {
             json.events.forEach((ev: any) => {
               handleMessageData(ev.event, ev.data);
-              if (ev.timestamp > lastTimestamp) {
-                lastTimestamp = ev.timestamp;
-              }
             });
           }
         }
-      } catch {}
-    }, 6000);
+      } catch {
+        setIsConnected(false);
+      } finally {
+        isFetching = false;
+      }
+    };
+
+    const startPolling = () => {
+      if (pollInterval) return;
+      usePolling = true;
+      poll();
+      pollInterval = setInterval(poll, 12000);
+    };
+
+    if (typeof window !== 'undefined' && 'EventSource' in window) {
+      try {
+        const streamUrl = api.getRealtimeStreamUrl();
+        eventSource = new EventSource(streamUrl);
+
+        eventSource.onopen = () => {
+          if (isSubscribed) {
+            setIsConnected(true);
+          }
+        };
+
+        const eventNames = [
+          'connected',
+          'presence.updated',
+          'user.typing',
+          'task.created',
+          'task.updated',
+          'task.deleted',
+          'task.bulk_status',
+          'comment.created',
+          'comment.deleted',
+        ];
+
+        eventNames.forEach((name) => {
+          eventSource?.addEventListener(name, (e: MessageEvent) => {
+            try {
+              const data = JSON.parse(e.data);
+              handleMessageData(name, data);
+            } catch {}
+          });
+        });
+
+        eventSource.onerror = () => {
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          startPolling();
+        };
+      } catch {
+        startPolling();
+      }
+    } else {
+      startPolling();
+    }
+
+    const handleVisibilityChange = () => {
+      if (typeof document !== 'undefined' && !document.hidden && isSubscribed) {
+        if (usePolling) {
+          poll();
+        }
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
 
     return () => {
       isSubscribed = false;
-      if (eventSource) eventSource.close();
-      if (pollInterval) clearInterval(pollInterval);
+      if (eventSource) {
+        eventSource.close();
+      }
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
     };
   }, [isAuthenticated]);
 

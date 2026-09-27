@@ -33,35 +33,25 @@ class RealtimeController extends Controller
         ];
 
         return response()->stream(function () {
-            $lastTime = microtime(true) - 10;
-            $startTime = time();
+            $lastTime = microtime(true) - 15;
+
+            echo "retry: 3000\n\n";
 
             $initialPayload = json_encode([
                 'active_users' => $this->realtime->getActiveUsers(),
                 'connected_at' => now()->toIso8601String(),
             ]);
             echo "event: connected\ndata: {$initialPayload}\n\n";
-            flush();
 
-            // SSE loop running for max 25 seconds per HTTP request to avoid gateway timeout
-            while (time() - $startTime < 25) {
-                if (connection_status() !== CONNECTION_NORMAL || connection_aborted()) {
-                    break;
-                }
-
-                $newEvents = $this->realtime->getEventsSince($lastTime);
-                foreach ($newEvents as $event) {
-                    $eventName = $event['event'];
-                    $payload = json_encode($event['data']);
-                    echo "id: {$event['id']}\nevent: {$eventName}\ndata: {$payload}\n\n";
-                    $lastTime = max($lastTime, (float) $event['timestamp']);
-                }
-
-                echo ": ping\n\n";
-                flush();
-
-                sleep(1);
+            $newEvents = $this->realtime->getEventsSince($lastTime);
+            foreach ($newEvents as $event) {
+                $eventName = $event['event'];
+                $payload = json_encode($event['data']);
+                echo "id: {$event['id']}\nevent: {$eventName}\ndata: {$payload}\n\n";
             }
+
+            echo ": ping\n\n";
+            flush();
         }, 200, $headers);
     }
 
