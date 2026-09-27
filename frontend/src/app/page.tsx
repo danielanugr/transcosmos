@@ -104,6 +104,11 @@ export default function Home() {
     }
   };
 
+  const { onlineUsers, typingMap, sendTyping, isConnected } = useRealtime({
+    onTaskChange: () => loadTasks(true),
+    onCommentChange: () => loadTasks(true),
+  });
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -122,11 +127,6 @@ export default function Home() {
       </main>
     );
   }
-
-  const { onlineUsers, typingMap, sendTyping, isConnected } = useRealtime({
-    onTaskChange: () => loadTasks(true),
-    onCommentChange: () => loadTasks(true),
-  });
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
