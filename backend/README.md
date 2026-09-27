@@ -1,62 +1,99 @@
-# Task Management API - Backend
+# Task Management API - Laravel 12 Backend
 
-A clean, modular PHP REST API supporting task management, secure file attachments, image thumbnails, and background queues.
+A production-ready REST API built with Laravel 12 providing task management, secure file attachments, image thumbnail processing, and asynchronous background queue execution.
 
-## Feature Matrix
+## Features
 
-- **Authentication**: JWT authentication (HMAC-SHA256) with token blacklisting on logout and RBAC middleware.
-- **Task Management**: Full CRUD with server-side pagination, status/priority filtering, keyword search, and relational joins.
-- **File Uploads**: MIME verification via `finfo`, virus scan simulation, GD thumbnail generation, file versioning, and chunked uploads (>50MB).
-- **Background Queue**: Database-backed job queue with retries, exponential backoff, and asynchronous workers for emails, status updates, thumbnails, and exports.
-- **Testing**: Automated test suite covering auth, task CRUD, uploads, versioning, chunking, and queues.
+- **Authentication**: RFC 7519 HMAC-SHA256 JWT tokens with role claims and token revocation via Cache, plus Laravel Sanctum API support.
+- **Task Management**: Full CRUD with server-side pagination, status/priority filtering, keyword search, and eager-loaded Eloquent relationships (`assignedUser`, `creator`, `attachments`, `comments`).
+- **File Uploads**: MIME verification via `finfo_file`, virus scanner simulation, GD thumbnail generation, automatic file versioning on duplicates, and chunked uploads (>50MB).
+- **Background Queue Processing**: Native database queue driver with retries and exponential backoff for:
+  - Task assignment email notifications (`SendTaskAssignedEmailJob`)
+  - Bulk task status updates (`BulkTaskStatusUpdateJob`)
+  - Asynchronous file threat scanning and thumbnail generation (`ProcessFileJob`)
+  - CSV report exports (`ExportDataJob`)
+- **Automated Tests**: Comprehensive PHPUnit feature test suite covering 19 test assertions with 100% pass rate.
 
-## Directory Structure
+## Project Structure
 
 ```
 backend/
-├── config/             Configuration files (app, database)
-├── database/           SQL schema, seeds, full dump, and seeder script
-├── public/             Front controller (index.php) and rewrite rules
-├── src/
-│   ├── Auth/           JWT service and security logic
-│   ├── Controllers/    API route controllers
-│   ├── Database/       Database connection and transaction manager
-│   ├── Http/           Request, Response, and Router
-│   ├── Middleware/     CORS, Auth, and Role-based access control
-│   ├── Queue/          Queue manager, job interfaces, and concrete jobs
-│   ├── Repositories/   Data access layer (Users, Tasks, Attachments, Comments, Jobs)
-│   ├── Services/       Business logic, file uploads, virus scanning, thumbnails
-│   └── Utils/          Env parser, structured logger, input validator, helpers
-├── storage/            File uploads, thumbnails, temporary chunks, exports, logs
-├── tests/              Integration test suites and test runner
-└── worker.php          CLI queue worker process
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── AuthController.php
+│   │   │   ├── TaskController.php
+│   │   │   ├── AttachmentController.php
+│   │   │   ├── CommentController.php
+│   │   │   └── QueueController.php
+│   │   └── Middleware/
+│   │       ├── AuthenticateWithJwt.php
+│   │       └── RoleMiddleware.php
+│   ├── Jobs/
+│   │   ├── SendTaskAssignedEmailJob.php
+│   │   ├── BulkTaskStatusUpdateJob.php
+│   │   ├── ProcessFileJob.php
+│   │   └── ExportDataJob.php
+│   ├── Models/
+│   │   ├── User.php
+│   │   ├── Task.php
+│   │   ├── TaskAttachment.php
+│   │   ├── TaskComment.php
+│   │   └── FileChunk.php
+│   └── Services/
+│       ├── JwtService.php
+│       ├── FileUploadService.php
+│       ├── ImageThumbnailService.php
+│       └── VirusScannerService.php
+├── bootstrap/
+│   └── app.php
+├── config/
+├── database/
+│   ├── migrations/
+│   ├── seeders/
+│   │   └── DatabaseSeeder.php
+│   ├── schema.sql
+│   ├── seeds.sql
+│   └── dump.sql
+├── routes/
+│   └── api.php
+├── tests/
+│   └── Feature/
+│       ├── AuthApiTest.php
+│       ├── TaskApiTest.php
+│       ├── AttachmentApiTest.php
+│       └── QueueApiTest.php
+├── artisan
+└── composer.json
 ```
 
 ## Running the Application
 
-1. **Seed the database**:
+1. **Run migrations and seed the database**:
    ```bash
-   php database/Seeder.php
+   php artisan migrate:fresh --seed
    ```
 
-2. **Run tests**:
+2. **Run feature tests**:
    ```bash
-   php tests/run_tests.php
+   php artisan test
    ```
 
-3. **Start the API server**:
+3. **Start the API development server**:
    ```bash
-   php -S 127.0.0.1:8000 -t public
+   php artisan serve --port=8000
    ```
 
-4. **Run background queue worker**:
+4. **Run the background queue worker**:
    ```bash
-   php worker.php
+   php artisan queue:work
    ```
 
-## Test Accounts
+## Seeded Test Accounts
 
-All accounts use password: `password123`
+All accounts share password: `password123`
 - Admin: `alice@example.com`
 - Manager: `bob@example.com`
 - Member: `charlie@example.com`
+- Member: `diana@example.com`
+- Member: `evan@example.com`

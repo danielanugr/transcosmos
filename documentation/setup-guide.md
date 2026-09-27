@@ -3,40 +3,35 @@
 ## System Requirements
 
 - PHP 8.2 or higher (tested on PHP 8.3)
-- PHP Extensions: `pdo`, `pdo_sqlite` (or `pdo_mysql`), `gd`, `fileinfo`, `mbstring`, `openssl`, `curl`
-- Composer (or use standalone PSR-4 autoloader)
+- PHP Extensions: `pdo`, `pdo_sqlite` (or `pdo_mysql`), `gd`, `fileinfo`, `mbstring`, `openssl`, `curl`, `sodium`
+- Composer 2.x
 - Optional: MySQL 8.0+ / MariaDB 10.4+
 
 ## Quick Start (Zero Configuration with SQLite)
 
-1. Clone or extract the project to your workspace:
+1. Navigate to the backend directory:
    ```bash
-   cd trans-cosmos/backend
+   cd backend
    ```
 
-2. Generate autoload files:
+2. Run migrations and populate the sample seed data:
    ```bash
-   composer dump-autoload
+   php artisan migrate:fresh --seed
    ```
 
-3. Initialize the database and populate seed data:
+3. Run the automated test suite:
    ```bash
-   php database/Seeder.php
+   php artisan test
    ```
 
-4. Run the automated test suite:
+4. Start the local development server:
    ```bash
-   php tests/run_tests.php
+   php artisan serve --port=8000
    ```
 
-5. Start the local development server:
+5. In a separate terminal, start the background queue worker:
    ```bash
-   php -S 127.0.0.1:8000 -t public
-   ```
-
-6. In a separate terminal, start the background queue worker:
-   ```bash
-   php worker.php
+   php artisan queue:work
    ```
 
 ## Production Setup with MySQL
@@ -46,12 +41,12 @@
    CREATE DATABASE task_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-2. Import the database dump:
+2. Import the SQL dump:
    ```bash
    mysql -u root -p task_management < database/dump.sql
    ```
 
-3. Update `.env` configuration:
+3. Update `.env` in `backend/`:
    ```env
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
@@ -61,9 +56,9 @@
    DB_PASSWORD=your_password
    ```
 
-4. Verify database connection and entities:
+4. Run migrations and seeders:
    ```bash
-   php database/Seeder.php
+   php artisan migrate --seed
    ```
 
 ## Default Test User Accounts
