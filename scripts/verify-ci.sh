@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-echo "========================================================"
 echo "Running Full Local CI/CD Pipeline Verification"
-echo "========================================================"
 
 echo ""
 echo "[1/4] Running Backend Tests (PHPUnit)..."
@@ -22,6 +20,4 @@ npm run build
 cd ..
 
 echo ""
-echo "========================================================"
 echo "[SUCCESS] All CI/CD Checks Passed Successfully!"
-echo "========================================================"

@@ -26,13 +26,11 @@ class AdvancedCacheService
         $version = $this->getVersion();
         $namespacedKey = "v{$version}:{$baseKey}";
 
-        // 1. L1 Request-scoped memory cache check
         if (array_key_exists($namespacedKey, self::$requestMemoryCache)) {
             $this->recordMetric('l1_hit');
             return self::$requestMemoryCache[$namespacedKey];
         }
 
-        // 2. L2 Persistent cache check
         if (Cache::has($namespacedKey)) {
             $value = Cache::get($namespacedKey);
             self::$requestMemoryCache[$namespacedKey] = $value;
@@ -42,7 +40,6 @@ class AdvancedCacheService
 
         $this->recordMetric('miss');
 
-        // 3. Cache Stampede Protection using atomic mutex lock
         $lockKey = "lock:{$namespacedKey}";
         $lock = Cache::lock($lockKey, 10);
 

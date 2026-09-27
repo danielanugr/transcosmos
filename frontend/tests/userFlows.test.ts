@@ -18,7 +18,6 @@ describe('Critical User Flows & Integration Tests', () => {
     vi.stubGlobal('window', { localStorage: mockLocalStorage });
     vi.stubGlobal('localStorage', mockLocalStorage);
 
-    // 1. Login
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -35,7 +34,6 @@ describe('Critical User Flows & Integration Tests', () => {
     expect(loginRes.token).toBe('mock-jwt-token-12345');
     expect(mockLocalStorage.getItem('auth_token')).toBe('mock-jwt-token-12345');
 
-    // 2. Query Current User Profile
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -49,7 +47,6 @@ describe('Critical User Flows & Integration Tests', () => {
     expect(user.email).toBe('alice@example.com');
     expect(user.role).toBe('admin');
 
-    // 3. Logout
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -61,7 +58,6 @@ describe('Critical User Flows & Integration Tests', () => {
   });
 
   it('completes the task management lifecycle (create -> update -> bulk-status -> delete)', async () => {
-    // 1. Create task
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 201,
@@ -88,7 +84,6 @@ describe('Critical User Flows & Integration Tests', () => {
     expect(created.id).toBe(42);
     expect(created.title).toBe('New Feature Task');
 
-    // 2. Update task
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -101,7 +96,6 @@ describe('Critical User Flows & Integration Tests', () => {
     const updated = await api.updateTask(42, { status: 'in_progress' });
     expect(updated.status).toBe('in_progress');
 
-    // 3. Bulk status update
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -114,7 +108,6 @@ describe('Critical User Flows & Integration Tests', () => {
     const bulkRes = await api.bulkUpdateStatus([42], 'completed');
     expect(bulkRes.updated).toBe(1);
 
-    // 4. Delete task
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -125,7 +118,6 @@ describe('Critical User Flows & Integration Tests', () => {
   });
 
   it('completes the comment discussion flow on a task', async () => {
-    // 1. Add comment
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 201,
@@ -146,7 +138,6 @@ describe('Critical User Flows & Integration Tests', () => {
     expect(comment.id).toBe(101);
     expect(comment.comment).toBe('Code review completed and approved.');
 
-    // 2. List comments
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -160,7 +151,6 @@ describe('Critical User Flows & Integration Tests', () => {
     expect(comments).toHaveLength(1);
     expect(comments[0].user?.name).toBe('Alice');
 
-    // 3. Delete comment
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -171,7 +161,6 @@ describe('Critical User Flows & Integration Tests', () => {
   });
 
   it('triggers background queue execution and CSV export jobs', async () => {
-    // 1. Run queue work
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -185,7 +174,6 @@ describe('Critical User Flows & Integration Tests', () => {
     expect(queueRes.processed).toBe(3);
     expect(queueRes.remaining).toBe(0);
 
-    // 2. Export tasks
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 202,

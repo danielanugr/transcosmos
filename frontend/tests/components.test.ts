@@ -94,11 +94,9 @@ describe('UI Logic and Data Transformation Tests', () => {
     toggle(1);
     expect(selectedIds).toEqual([2]);
 
-    // Select all
     selectedIds = sampleTasks.map((t) => t.id);
     expect(selectedIds).toEqual([1, 2, 3]);
 
-    // Deselect all
     selectedIds = [];
     expect(selectedIds).toHaveLength(0);
   });

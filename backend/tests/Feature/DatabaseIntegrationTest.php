@@ -135,7 +135,6 @@ class DatabaseIntegrationTest extends TestCase
         $this->assertSame(0, $chunks[0]->chunk_index);
         $this->assertSame(2, $chunks[2]->chunk_index);
 
-        // Purge chunks
         FileChunk::where('upload_id', $uploadId)->delete();
         $this->assertSame(0, FileChunk::where('upload_id', $uploadId)->count());
     }

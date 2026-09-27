@@ -27,12 +27,10 @@ class AdvancedCacheServiceTest extends TestCase
             return ['status' => 'success', 'timestamp' => microtime(true)];
         };
 
-        // First call - Cache Miss, callback executed
         $res1 = $this->cacheService->rememberWithLock('test_key_1', 60, $callback);
         $this->assertSame(1, $callCount);
         $this->assertSame('success', $res1['status']);
 
-        // Second call - Cache Hit (L1/L2), callback NOT executed
         $res2 = $this->cacheService->rememberWithLock('test_key_1', 60, $callback);
         $this->assertSame(1, $callCount);
         $this->assertSame($res1['timestamp'], $res2['timestamp']);
@@ -50,11 +48,9 @@ class AdvancedCacheServiceTest extends TestCase
         $this->assertSame('value_call_1', $val1);
         $this->assertSame(1, $callCount);
 
-        // Invalidate cache namespace
         $newVersion = $this->cacheService->invalidateNamespace();
         $this->assertGreaterThan(1, $newVersion);
 
-        // Next call should execute callback because version bumped
         $val2 = $this->cacheService->rememberWithLock('test_inv_key', 60, $callback);
         $this->assertSame('value_call_2', $val2);
         $this->assertSame(2, $callCount);
@@ -68,20 +64,15 @@ class AdvancedCacheServiceTest extends TestCase
         $this->assertStringStartsWith('"', $etag);
         $this->assertStringEndsWith('"', $etag);
 
-        // Exactly matching header
         $this->assertTrue($this->cacheService->isNotModified($etag, $etag));
-        // Header without quotes
         $this->assertTrue($this->cacheService->isNotModified(trim($etag, '"'), $etag));
-        // Mismatching header
         $this->assertFalse($this->cacheService->isNotModified('"different_hash"', $etag));
-        // Empty header
         $this->assertFalse($this->cacheService->isNotModified(null, $etag));
     }
 
     public function test_records_telemetry_metrics(): void
     {
         $this->cacheService->rememberWithLock('telemetry_key', 60, fn() => 'sample');
-        // Trigger hit
         $this->cacheService->rememberWithLock('telemetry_key', 60, fn() => 'sample');
 
         $stats = $this->cacheService->getTelemetryStats();

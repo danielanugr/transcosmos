@@ -1,7 +1,5 @@
 @echo off
-echo ========================================================
 echo Running Full Local CI/CD Pipeline Verification
-echo ========================================================
 
 echo.
 echo [1/4] Running Backend Tests (PHPUnit)...
@@ -35,6 +33,4 @@ cd ..
 node -e "Promise.all([fetch('http://127.0.0.1:3000').then(r => 'Frontend HTTP: ' + r.status), fetch('http://127.0.0.1:8000/api/health').then(r => r.json()).then(d => 'Backend Status: ' + d.data.status)]).then(res => console.log(res.join(' | '))).catch(e => console.log('Live server check skipped (not running):', e.message))"
 
 echo.
-echo ========================================================
 echo [SUCCESS] All CI/CD Checks Passed Successfully!
-echo ========================================================

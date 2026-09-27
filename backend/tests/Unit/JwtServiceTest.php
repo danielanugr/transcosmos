@@ -51,7 +51,6 @@ class JwtServiceTest extends TestCase
         $token = $this->jwt->generateToken($this->user);
         $parts = explode('.', $token);
 
-        // Tamper with payload (middle part)
         $tamperedPayload = JwtService::base64UrlEncode(json_encode(['sub' => 9999, 'role' => 'superadmin']));
         $tamperedToken = $parts[0] . '.' . $tamperedPayload . '.' . $parts[2];
 
