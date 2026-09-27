@@ -59,7 +59,17 @@ export default function Home() {
     if (!quiet) setLoading(true);
     try {
       const res = await api.getTasks(filters);
-      const list = Array.isArray(res) ? res : (res?.data || []);
+      const rawList = Array.isArray(res) ? res : (res?.data || []);
+      const seen = new Set<number>();
+      const list: Task[] = [];
+      for (const t of rawList) {
+        if (!t || typeof t !== 'object') continue;
+        if (t.id != null) {
+          if (seen.has(t.id)) continue;
+          seen.add(t.id);
+        }
+        list.push(t);
+      }
       setTasks(list);
       setCurrentPage(res?.current_page || 1);
       setLastPage(res?.last_page || 1);

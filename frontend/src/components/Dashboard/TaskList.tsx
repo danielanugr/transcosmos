@@ -115,17 +115,20 @@ export function TaskList({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            selected={selectedIds.includes(task.id)}
-            onSelect={onToggleSelect}
-            onView={onViewTask}
-            onEdit={onEditTask}
-            onDelete={onDeleteTask}
-          />
-        ))}
+        {tasks.map((task, index) => {
+          const itemKey = task?.id != null ? `task-${task.id}` : `task-index-${index}`;
+          return (
+            <TaskCard
+              key={itemKey}
+              task={task}
+              selected={task?.id != null && selectedIds.includes(task.id)}
+              onSelect={onToggleSelect}
+              onView={onViewTask}
+              onEdit={onEditTask}
+              onDelete={onDeleteTask}
+            />
+          );
+        })}
       </div>
 
       {lastPage > 1 && (
