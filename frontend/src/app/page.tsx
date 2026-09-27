@@ -114,8 +114,7 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950 -z-10" />
+      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
         <LoginForm />
       </main>
     );
@@ -132,7 +131,19 @@ export default function Home() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <TaskStats tasks={tasks} />
+        <TaskStats
+          tasks={tasks}
+          activeStatus={filters.status || 'all'}
+          activePriority={filters.priority || 'all'}
+          onFilterChange={(status, priority) =>
+            setFilters((prev) => ({
+              ...prev,
+              status,
+              priority: priority || 'all',
+              page: 1,
+            }))
+          }
+        />
 
         <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-5">
           <TaskFilters
@@ -164,6 +175,20 @@ export default function Home() {
             lastPage={lastPage}
             total={total}
             onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
+            onResetFilters={() =>
+              setFilters({
+                status: 'all',
+                priority: 'all',
+                sort_by: 'created_at',
+                sort_order: 'desc',
+                page: 1,
+                limit: 12,
+              })
+            }
+            onCreateTask={() => {
+              setEditingTask(null);
+              setIsTaskModalOpen(true);
+            }}
           />
         </div>
       </main>

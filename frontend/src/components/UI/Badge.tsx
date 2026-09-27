@@ -2,22 +2,26 @@ import React from 'react';
 import { TaskPriority, TaskStatus } from '@/lib/types';
 
 export function StatusBadge({ status }: { status: TaskStatus }) {
-  const configs: Record<TaskStatus, { label: string; className: string }> = {
+  const configs: Record<TaskStatus, { label: string; className: string; dot: string }> = {
     pending: {
       label: 'Pending',
-      className: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+      className: 'bg-amber-950/40 text-amber-300 border-amber-800/60',
+      dot: 'bg-amber-400',
     },
     in_progress: {
       label: 'In Progress',
-      className: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+      className: 'bg-blue-950/40 text-blue-300 border-blue-800/60',
+      dot: 'bg-blue-400',
     },
     completed: {
       label: 'Completed',
-      className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+      className: 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60',
+      dot: 'bg-emerald-400',
     },
     cancelled: {
       label: 'Cancelled',
-      className: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
+      className: 'bg-slate-900 text-slate-400 border-slate-700/60',
+      dot: 'bg-slate-500',
     },
   };
 
@@ -25,8 +29,9 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.className}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${config.className}`}
     >
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
       {config.label}
     </span>
   );
@@ -36,19 +41,19 @@ export function PriorityBadge({ priority }: { priority: TaskPriority }) {
   const configs: Record<TaskPriority, { label: string; className: string }> = {
     low: {
       label: 'Low',
-      className: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+      className: 'bg-slate-900 text-slate-400 border-slate-700/60',
     },
     medium: {
       label: 'Medium',
-      className: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+      className: 'bg-sky-950/40 text-sky-300 border-sky-800/60',
     },
     high: {
       label: 'High',
-      className: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+      className: 'bg-orange-950/40 text-orange-300 border-orange-800/60',
     },
     urgent: {
       label: 'Urgent',
-      className: 'bg-rose-500/15 text-rose-400 border-rose-500/40 font-semibold animate-pulse',
+      className: 'bg-rose-950/60 text-rose-300 border-rose-800/80 font-semibold',
     },
   };
 
@@ -56,7 +61,7 @@ export function PriorityBadge({ priority }: { priority: TaskPriority }) {
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${config.className}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${config.className}`}
     >
       {config.label}
     </span>

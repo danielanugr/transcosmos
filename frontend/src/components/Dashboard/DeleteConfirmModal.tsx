@@ -69,7 +69,7 @@ export function DeleteConfirmModal({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-md shadow-rose-600/20 transition-all cursor-pointer disabled:opacity-50"
+            className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
           >
             {deleting ? 'Deleting...' : 'Delete Task'}
           </button>

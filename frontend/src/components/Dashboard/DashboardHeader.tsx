@@ -43,20 +43,15 @@ export function DashboardHeader({ onNewTask, onRefresh }: DashboardHeaderProps) 
   };
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-30">
+    <header className="border-b border-slate-800 bg-slate-900 sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400">
-            <Layers className="w-5 h-5" />
+          <div className="p-2 rounded-lg bg-slate-800 text-slate-200 border border-slate-700/60">
+            <Layers className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-100 text-base tracking-tight">TaskManager</span>
-              <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                v1.0
-              </span>
-            </div>
-            <p className="text-xs text-slate-400">Full-Stack Assessment Platform</p>
+            <span className="font-bold text-slate-100 text-base tracking-tight">TaskManager</span>
+            <p className="text-xs text-slate-400">Workspace Tasks & Processing</p>
           </div>
         </div>
 
@@ -95,7 +90,7 @@ export function DashboardHeader({ onNewTask, onRefresh }: DashboardHeaderProps) 
           <button
             type="button"
             onClick={onNewTask}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             New Task

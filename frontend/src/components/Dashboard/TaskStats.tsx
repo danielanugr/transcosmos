@@ -2,7 +2,19 @@ import React from 'react';
 import { Task } from '@/lib/types';
 import { CheckCircle2, Clock, AlertTriangle, ListTodo } from 'lucide-react';
 
-export function TaskStats({ tasks }: { tasks: Task[] }) {
+interface TaskStatsProps {
+  tasks: Task[];
+  activeStatus?: string;
+  activePriority?: string;
+  onFilterChange: (status: string, priority?: string) => void;
+}
+
+export function TaskStats({
+  tasks,
+  activeStatus = 'all',
+  activePriority = 'all',
+  onFilterChange,
+}: TaskStatsProps) {
   const total = tasks.length;
   const inProgress = tasks.filter((t) => t.status === 'in_progress').length;
   const completed = tasks.filter((t) => t.status === 'completed').length;
@@ -10,52 +22,64 @@ export function TaskStats({ tasks }: { tasks: Task[] }) {
 
   const cards = [
     {
-      label: 'Total Tasks',
+      id: 'all',
+      label: 'All Tasks',
       value: total,
       icon: ListTodo,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/10 border-blue-500/20',
+      isActive: activeStatus === 'all' && activePriority === 'all',
+      onClick: () => onFilterChange('all', 'all'),
+      color: 'text-slate-300',
     },
     {
+      id: 'in_progress',
       label: 'In Progress',
       value: inProgress,
       icon: Clock,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10 border-amber-500/20',
+      isActive: activeStatus === 'in_progress',
+      onClick: () => onFilterChange('in_progress', 'all'),
+      color: 'text-blue-400',
     },
     {
+      id: 'completed',
       label: 'Completed',
       value: completed,
       icon: CheckCircle2,
+      isActive: activeStatus === 'completed',
+      onClick: () => onFilterChange('completed', 'all'),
       color: 'text-emerald-400',
-      bg: 'bg-emerald-500/10 border-emerald-500/20',
     },
     {
-      label: 'High / Urgent',
+      id: 'urgent',
+      label: 'High & Urgent',
       value: urgent,
       icon: AlertTriangle,
+      isActive: activePriority === 'urgent' || activePriority === 'high',
+      onClick: () => onFilterChange('all', 'urgent'),
       color: 'text-rose-400',
-      bg: 'bg-rose-500/10 border-rose-500/20',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6" role="group" aria-label="Task overview metrics">
       {cards.map((c) => {
         const Icon = c.icon;
         return (
-          <div
-            key={c.label}
-            className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between"
+          <button
+            key={c.id}
+            type="button"
+            onClick={c.onClick}
+            className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+              c.isActive
+                ? 'bg-slate-900 border-blue-500/80 shadow-sm'
+                : 'bg-slate-900/50 border-slate-800/80 hover:bg-slate-900/80 hover:border-slate-700'
+            }`}
           >
-            <div>
-              <p className="text-xs font-medium text-slate-400">{c.label}</p>
-              <p className="text-2xl font-bold text-slate-100 mt-1">{c.value}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">{c.label}</span>
+              <Icon className={`w-4 h-4 ${c.color}`} />
             </div>
-            <div className={`p-2.5 rounded-xl border ${c.bg}`}>
-              <Icon className={`w-5 h-5 ${c.color}`} />
-            </div>
-          </div>
+            <p className="text-2xl font-bold text-slate-100 mt-2">{c.value}</p>
+          </button>
         );
       })}
     </div>

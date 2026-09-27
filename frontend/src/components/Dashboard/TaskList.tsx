@@ -18,6 +18,8 @@ interface TaskListProps {
   lastPage: number;
   total: number;
   onPageChange: (page: number) => void;
+  onResetFilters?: () => void;
+  onCreateTask?: () => void;
 }
 
 export function TaskList({
@@ -33,6 +35,8 @@ export function TaskList({
   lastPage,
   total,
   onPageChange,
+  onResetFilters,
+  onCreateTask,
 }: TaskListProps) {
   if (loading) {
     return (
@@ -61,14 +65,34 @@ export function TaskList({
 
   if (tasks.length === 0) {
     return (
-      <div className="py-16 text-center rounded-2xl border border-slate-800 bg-slate-900/30">
-        <div className="inline-flex p-3 rounded-2xl bg-slate-800/80 text-slate-400 mb-3 border border-slate-700/60">
-          <Inbox className="w-8 h-8" />
+      <div className="py-16 text-center rounded-xl border border-slate-800 bg-slate-900/40">
+        <div className="inline-flex p-3 rounded-xl bg-slate-800 text-slate-400 mb-3 border border-slate-700/60">
+          <Inbox className="w-7 h-7" />
         </div>
-        <h3 className="text-base font-semibold text-slate-200">No tasks found</h3>
-        <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-          No tasks match the active filters or search terms. Try broadening your criteria or create a new task.
+        <h3 className="text-sm font-semibold text-slate-200">No matching tasks</h3>
+        <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-4">
+          No tasks match the active filters or search criteria. Reset filters or create a new task to continue.
         </p>
+        <div className="flex items-center justify-center gap-2">
+          {onResetFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              Reset Filters
+            </button>
+          )}
+          {onCreateTask && (
+            <button
+              type="button"
+              onClick={onCreateTask}
+              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-colors"
+            >
+              Create New Task
+            </button>
+          )}
+        </div>
       </div>
     );
   }

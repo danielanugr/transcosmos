@@ -193,7 +193,7 @@ export function TaskModal({ isOpen, onClose, task, onSaved }: TaskModalProps) {
           <button
             type="submit"
             disabled={submitting}
-            className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50"
+            className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
           >
             {submitting ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
           </button>

@@ -36,10 +36,10 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-8 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl backdrop-blur-md">
+    <div className="w-full max-w-md mx-auto p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
       <div className="text-center mb-8">
-        <div className="inline-flex p-3 rounded-2xl bg-blue-600/10 border border-blue-500/20 text-blue-400 mb-4">
-          <Shield className="w-8 h-8" />
+        <div className="inline-flex p-3 rounded-xl bg-slate-800 border border-slate-700 text-blue-400 mb-4">
+          <Shield className="w-7 h-7" />
         </div>
         <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Task Platform</h1>
         <p className="text-sm text-slate-400 mt-1">Sign in to manage tasks, collaborate, and upload assets</p>
