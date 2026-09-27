@@ -118,6 +118,20 @@ jobs:
           push: false
           tags: task-management-frontend:ci
 
+      - name: Build Media Processor Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/media-processor
+          push: false
+          tags: task-management-media-processor:ci
+
+      - name: Build Notification Service Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/notification-service
+          push: false
+          tags: task-management-notification-service:ci
+
   deploy-staging:
     name: Deploy to Staging / Production
     runs-on: ubuntu-latest
