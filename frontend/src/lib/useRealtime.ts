@@ -57,9 +57,8 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
     let isSubscribed = true;
     let isFetching = false;
     let lastTimestamp = Date.now() / 1000;
+    let lastPollTime = Date.now();
     let pollInterval: NodeJS.Timeout | null = null;
-    let eventSource: EventSource | null = null;
-    let usePolling = false;
 
     const handleMessageData = (event: string, payload: any) => {
       if (!isSubscribed) return;
@@ -93,6 +92,7 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
       if (typeof document !== 'undefined' && document.hidden) return;
 
       isFetching = true;
+      lastPollTime = Date.now();
       try {
         const streamUrl = `${api.getRealtimeStreamUrl()}?poll=1&since=${lastTimestamp}`;
         const res = await fetch(streamUrl);
@@ -122,62 +122,15 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
       }
     };
 
-    const startPolling = () => {
-      if (pollInterval) return;
-      usePolling = true;
-      poll();
-      pollInterval = setInterval(poll, 12000);
-    };
-
-    if (typeof window !== 'undefined' && 'EventSource' in window) {
-      try {
-        const streamUrl = api.getRealtimeStreamUrl();
-        eventSource = new EventSource(streamUrl);
-
-        eventSource.onopen = () => {
-          if (isSubscribed) {
-            setIsConnected(true);
-          }
-        };
-
-        const eventNames = [
-          'connected',
-          'presence.updated',
-          'user.typing',
-          'task.created',
-          'task.updated',
-          'task.deleted',
-          'task.bulk_status',
-          'comment.created',
-          'comment.deleted',
-        ];
-
-        eventNames.forEach((name) => {
-          eventSource?.addEventListener(name, (e: MessageEvent) => {
-            try {
-              const data = JSON.parse(e.data);
-              handleMessageData(name, data);
-            } catch {}
-          });
-        });
-
-        eventSource.onerror = () => {
-          if (eventSource) {
-            eventSource.close();
-            eventSource = null;
-          }
-          startPolling();
-        };
-      } catch {
-        startPolling();
-      }
-    } else {
-      startPolling();
-    }
+    // Initial poll
+    poll();
+    // Regular 20-second background sync interval
+    pollInterval = setInterval(poll, 20000);
 
     const handleVisibilityChange = () => {
       if (typeof document !== 'undefined' && !document.hidden && isSubscribed) {
-        if (usePolling) {
+        // Debounce: only sync if more than 15 seconds passed since last poll
+        if (Date.now() - lastPollTime > 15000) {
           poll();
         }
       }
@@ -189,9 +142,6 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
 
     return () => {
       isSubscribed = false;
-      if (eventSource) {
-        eventSource.close();
-      }
       if (pollInterval) {
         clearInterval(pollInterval);
       }
